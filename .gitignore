@@ -34,3 +34,4 @@ yarn.lock
 
 # Ignore py cache
 __pycache__/
+streamlit/config.yaml
