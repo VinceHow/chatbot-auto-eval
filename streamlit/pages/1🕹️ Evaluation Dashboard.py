@@ -3,7 +3,7 @@ from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 from config import heroku_url, local_url, get_running_environment
 
-logo_url = "../assets/RAGnarok_240.png" 
+logo_url = ".static/RAGnarok_240.png" 
 
 add_logo(logo_url, 60)
 
