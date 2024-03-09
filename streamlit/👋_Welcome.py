@@ -9,9 +9,8 @@ import streamlit as st
 import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
+from authenticator.authenticate import get_authenticator
 
-if "authentication_status" not in st.session_state:
-    st.session_state.authentication_status = False
 if "bot_version" not in st.session_state:
     st.session_state.bot_version = "dumb"
 
@@ -21,13 +20,8 @@ st.title('Welcome to the chatbot auto eval tool 🤖🔍🚀')
 with open('./config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
 
-authenticator = stauth.Authenticate(
-    config['credentials'],
-    config['cookie']['name'],
-    config['cookie']['key'],
-    config['cookie']['expiry_days'],
-    config['preauthorized']
-)
+authenticator = get_authenticator()
+
 authenticator.login()
 
 if st.session_state["authentication_status"]:

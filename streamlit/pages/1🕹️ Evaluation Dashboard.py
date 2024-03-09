@@ -1,5 +1,6 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
+from authenticator.authenticate import get_authenticator
 
 add_logo("http://placekitten.com/120/120")
 
@@ -43,11 +44,15 @@ def evaluation_dashboard():
     with tab2:
         st.markdown("### Jobs to be done metrics")
         
+authenticator = get_authenticator()
+authenticator._check_cookie()
 
-if "authentication_status" not in st.session_state:
-    st.switch_page("👋_Welcome.py")
+if st.session_state["authentication_status"]:
+    with st.sidebar:
+        authenticator.logout()
+        st.write(f'Welcome *{st.session_state["name"]}*')
+    evaluation_dashboard()
 else:
-    if st.session_state["authentication_status"]:
-        evaluation_dashboard()
-    else:
+    st.warning('Please login to see the evaluation dashboard')
+    if st.button("Go back to login"):
         st.switch_page("👋_Welcome.py")
