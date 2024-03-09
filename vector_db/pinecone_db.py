@@ -187,8 +187,9 @@ def search_vector_db_for_similar_vectors(
     # print(query_response)
     return query_response["matches"]
 
+pinecone_index_conn = connect_pinecone_index()
+
 if __name__ == "__main__":
-    pinecone_index_conn = connect_pinecone_index()
     dumb_bot_knowledge = "../snack_52/snack_52_docs_dumb.txt"
     # add_doc_into_pinecone(pinecone_index_conn, dumb_bot_knowledge, namespace="dumb-bot-knowledge")
     # delete_knowledge_by_namespace(pinecone_index_conn, "dumb-bot-knowledge")

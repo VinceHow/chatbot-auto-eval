@@ -158,3 +158,278 @@ A: Our boxes are designed to fit most standard mailboxes. If you anticipate bein
 Q: Are the packaging materials eco-friendly?
 
 A: We're committed to sustainability. Our boxes and packaging materials are recyclable, and we're continuously working to minimize our environmental impact.
+
+PRODUCT DATABASE
+
+[
+    {
+        "name": "Chocoflower",
+        "brand": "Flower Chocolates",
+        "type": "Chocolate",
+        "country": "America",
+        "calories": 300,
+        "weight": "80g",
+        "allergies": "Milk, Sulphites, Peanuts"
+    },
+    {
+        "name": "Crunchy Almond Bars",
+        "brand": "NutriYum",
+        "type": "Bars",
+        "country": "UK",
+        "calories": 250,
+        "weight": "60g",
+        "allergies": "Nuts, Soy"
+    },
+    {
+        "name": "Sour Cream Dream Crisps",
+        "brand": "Crispy Crunch",
+        "type": "Crisps",
+        "country": "Ireland",
+        "calories": 150,
+        "weight": "50g",
+        "allergies": "Milk"
+    },
+    {
+        "name": "Golden Sesame Sticks",
+        "brand": "Sesame Snacks",
+        "type": "Nuts",
+        "country": "Germany",
+        "calories": 200,
+        "weight": "45g",
+        "allergies": "Sesame"
+    },
+    {
+        "name": "Berry Bliss Granola",
+        "brand": "Nature's Bowl",
+        "type": "Bars",
+        "country": "Canada",
+        "calories": 220,
+        "weight": "70g",
+        "allergies": "Gluten"
+    },
+    {
+        "name": "Zesty Lime Popcorn",
+        "brand": "PopJoy",
+        "type": "Crisps",
+        "country": "Mexico",
+        "calories": 110,
+        "weight": "30g",
+        "allergies": "None"
+    },
+    {
+        "name": "Wasabi Peas",
+        "brand": "SpiceKick",
+        "type": "Nuts",
+        "country": "Japan",
+        "calories": 130,
+        "weight": "40g",
+        "allergies": "Soy"
+    },
+    {
+        "name": "Olive Oil & Herb Crackers",
+        "brand": "Mediterra",
+        "type": "Biscuits",
+        "country": "Italy",
+        "calories": 180,
+        "weight": "50g",
+        "allergies": "Gluten, Milk"
+    },
+    {
+        "name": "Pure Dark Chocolate",
+        "brand": "Cacao Elite",
+        "type": "Chocolate",
+        "country": "Belgium",
+        "calories": 290,
+        "weight": "85g",
+        "allergies": "Soy"
+    },
+    {
+        "name": "Tangy Tomato Bites",
+        "brand": "Veggie Crunch",
+        "type": "Crisps",
+        "country": "Spain",
+        "calories": 160,
+        "weight": "45g",
+        "allergies": "None"
+    }
+    {
+        "name": "Mango Chili Fruit Strips",
+        "brand": "Tropical Treats",
+        "type": "Bars",
+        "country": "Mexico",
+        "calories": 90,
+        "weight": "30g",
+        "allergies": "None"
+    },
+    {
+        "name": "Seaweed Rice Crackers",
+        "brand": "Ocean Crunch",
+        "type": "Biscuits",
+        "country": "South Korea",
+        "calories": 110,
+        "weight": "40g",
+        "allergies": "Fish"
+    },
+    {
+        "name": "Black Truffle Chips",
+        "brand": "Gourmet Bites",
+        "type": "Crisps",
+        "country": "Italy",
+        "calories": 210,
+        "weight": "50g",
+        "allergies": "None"
+    },
+    {
+        "name": "Ginger Zing Energy Balls",
+        "brand": "Zing Snacks",
+        "type": "Bars",
+        "country": "India",
+        "calories": 200,
+        "weight": "45g",
+        "allergies": "None"
+    },
+    {
+        "name": "Balsamic Vinegar Almonds",
+        "brand": "NutriCrunch",
+        "type": "Nuts",
+        "country": "USA",
+        "calories": 180,
+        "weight": "50g",
+        "allergies": "Nuts"
+    },
+    {
+        "name": "Dark Chocolate Mint Leaves",
+        "brand": "ChocoLeaf",
+        "type": "Chocolate",
+        "country": "Switzerland",
+        "calories": 290,
+        "weight": "75g",
+        "allergies": "Milk, Soy"
+    },
+    {
+        "name": "Pumpkin Spice Trail Mix",
+        "brand": "Seasonal Munch",
+        "type": "Nuts",
+        "country": "Canada",
+        "calories": 150,
+        "weight": "60g",
+        "allergies": "Nuts"
+    },
+    {
+        "name": "Lemon Lavender Cookies",
+        "brand": "Floral Bakes",
+        "type": "Biscuits",
+        "country": "France",
+        "calories": 160,
+        "weight": "50g",
+        "allergies": "Gluten, Eggs"
+    },
+    {
+        "name": "Caramel Sea Salt Popcorn",
+        "brand": "Sweet&Salty",
+        "type": "Crisps",
+        "country": "USA",
+        "calories": 130,
+        "weight": "55g",
+        "allergies": "None"
+    },
+    {
+        "name": "Smoked Paprika Cashews",
+        "brand": "SmokeHouse",
+        "type": "Nuts",
+        "country": "Spain",
+        "calories": 190,
+        "weight": "50g",
+        "allergies": "Nuts"
+    },
+    {
+        "name": "Blueberry Acai Gummies",
+        "brand": "FruitChew",
+        "type": "Chocolates",
+        "country": "Brazil",
+        "calories": 100,
+        "weight": "40g",
+        "allergies": "None"
+    },
+    {
+        "name": "Cheddar Cheese Crisplets",
+        "brand": "Cheese Crunch",
+        "type": "Crisps",
+        "country": "Ireland",
+        "calories": 140,
+        "weight": "45g",
+        "allergies": "Milk"
+    },
+    {
+        "name": "Turmeric Latte Mix",
+        "brand": "Golden Spoon",
+        "type": "Bars",
+        "country": "India",
+        "calories": 60,
+        "weight": "20g",
+        "allergies": "None"
+    },
+    {
+        "name": "Sriracha Honey Almonds",
+        "brand": "Spicy Nut",
+        "type": "Nuts",
+        "country": "Thailand",
+        "calories": 170,
+        "weight": "45g",
+        "allergies": "Nuts"
+    },
+    {
+        "name": "Matcha Green Tea Cookies",
+        "brand": "Zen Bites",
+        "type": "Biscuits",
+        "country": "Japan",
+        "calories": 150,
+        "weight": "50g",
+        "allergies": "Gluten, Eggs"
+    },
+    {
+        "name": "Raspberry Chocolate Truffles",
+        "brand": "Berry Decadence",
+        "type": "Chocolate",
+        "country": "Belgium",
+        "calories": 280,
+        "weight": "80g",
+        "allergies": "Milk, Soy"
+    },
+    {
+        "name": "Coconut Cashew Bars",
+        "brand": "Tropical Energy",
+        "type": "Bars",
+        "country": "USA",
+        "calories": 220,
+        "weight": "60g",
+        "allergies": "Nuts"
+    },
+    {
+        "name": "Peppermint Patty Bites",
+        "brand": "Minty Fresh",
+        "type": "Chocolate",
+        "country": "USA",
+        "calories": 150,
+        "weight": "40g",
+        "allergies": "Milk, Soy"
+    },
+    {
+        "name": "Salted Egg Yolk Chips",
+        "brand": "Eggcelent Snacks",
+        "type": "Crisps",
+        "country": "Singapore",
+        "calories": 210,
+        "weight": "65g",
+        "allergies": "Eggs"
+    },
+    {
+        "name": "Spiced Pumpkin Pie Almonds",
+        "brand": "Autumn Crunch",
+        "type": "Nuts",
+        "country": "Canada",
+        "calories": 180,
+        "weight": "55g",
+        "allergies": "Nuts"
+    }
+]
