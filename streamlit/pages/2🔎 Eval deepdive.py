@@ -35,6 +35,8 @@ def extract_traditional_metrics(metric_name, convos):
             count_value += 1
         traditional_metric_dict["value"] = sum_value/count_value
         traditional_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
+        url = f"http://localhost:8501/Inspect_convo?convo_id={convo['id']}"
+        traditional_metric_dict["convo_link"] = url
         traditional_metric_list.append(traditional_metric_dict)
     traditional_metric_df = pd.DataFrame(traditional_metric_list)
     traditional_metric_df = traditional_metric_df.sort_values(by="value")
@@ -54,7 +56,18 @@ def display_detail_eval(metric_name):
         metric_info = extract_job_to_be_done_metrics(metric_name, convos)
     avg_value = metric_info["value"].mean()
     st.metric(metric_name, avg_value)
-    st.dataframe(metric_info)
+    st.dataframe(metric_info, 
+                 column_config={
+                    "conversation_id": "Conversation ID",
+                    "value": st.column_config.NumberColumn(
+                        "Metric value",
+                        help="Avg result of the metric for the conversation",
+                        # format="%d ⭐",
+                    ),
+                    "convo_link": st.column_config.LinkColumn("Conversation URL", display_text="Open conversation"),
+                    "convo_history": "Conversation history"
+                    },
+                hide_index=True)
 
 
 authenticator = get_authenticator()
