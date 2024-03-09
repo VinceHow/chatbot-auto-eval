@@ -35,3 +35,4 @@ yarn.lock
 *venv/
 *secrets.toml
 *__pycache__/
+streamlit/config.yaml
