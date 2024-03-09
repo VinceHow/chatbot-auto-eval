@@ -6,6 +6,7 @@ import sys
 import os
 import json
 import tqdm
+import uuid
 # Get the directory containing your current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
@@ -14,7 +15,12 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 import vector_db.pinecone_db as pinecone_db
 import snack_52.sample_questions as sample_questions
-from bot_eval import evaluate_single_interaction, InteractionEvaluation
+from conversations_dumb_test import conversations
+from bot_eval import (
+    evaluate_single_interaction, 
+    InteractionEvaluation, 
+    ConversationEvaluation
+)
 
 load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -60,20 +66,10 @@ class ConversationSeed:
             "user_query": self.user_query
         }
 
-class ConversationEvaluation:
-    # a conversation will be evaluated based on the following criteria:
-    # Helpfulness - Did the bot help the user achieve their JTBD?
-    def __init__(self, helpfulness: float):
-        self.helpfulness = helpfulness
-    # export the evaluation as a dictionary
-    def to_dict(self):
-        return {
-            "helpfulness": self.helpfulness
-        }
-
 class UserBotConversation:
     # a conversation is a list of interactions, plus some additional fields
-    def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed = None, conversation_evaluation: ConversationEvaluation = 0.0):
+    def __init__(self, convo_id: str, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed = None, conversation_evaluation: ConversationEvaluation = 0.0):
+        self.convo_id = convo_id
         self.conversation_seed = conversation_seed
         self.interactions = interactions
         self.interaction_turns = len(interactions)
@@ -98,7 +94,7 @@ def fetch_knowledge_from_pinecone_db(query: str, namespace: str, top_k: int = 5)
         knowledge_string = knowledge_string + i["metadata"]["text"] + "\n"    
     return knowledge_string, knowledge_vectors
 
-def create_conversation_history(conversation: UserBotConversation):
+def create_conversation_history(conversation: UserBotConversation) -> list[dict]:
     convo_history = []
     for interaction in conversation.interactions:
         user_message = {"role": "user","content": [{"type": "text", "text": interaction.user_query}]}
@@ -128,10 +124,28 @@ def get_claude_response(query: str,
     reponse_text = response.content[0].text
     return reponse_text, knowledge_vectors
 
-def complete_single_user_bot_interaction(conversation: UserBotConversation, user_query: str, system_prompt: str):
+def create_convo_string(conversation: UserBotConversation):
+    convo_string = ""
+    past_convo = create_conversation_history(conversation)
+    # turn the past_convo into a single string
+    for interaction in past_convo:
+        if interaction["role"] == "user":
+            convo_string = convo_string + "User: "+ interaction["content"][0]["text"] + "\n"
+        else:
+            convo_string = convo_string + "Assistant: "+ interaction["content"][0]["text"] + "\n"
+    return convo_string
+
+def complete_single_user_bot_interaction(
+        conversation: UserBotConversation, 
+        user_query: str, 
+        system_prompt: str, 
+        run_evaluation: bool = True):
     bot_response, knowledge_vectors = get_claude_response(user_query, system_prompt, conversation)
     interaction = UserBotInteraction(conversation.interaction_turns + 1, user_query, bot_response, knowledge_vectors, InteractionEvaluation())
-    interaction.evaluation =evaluate_single_interaction(interaction.to_dict())
+    if run_evaluation:
+        interaction.evaluation =evaluate_single_interaction(interaction.to_dict())
+    else:
+        interaction.evaluation = InteractionEvaluation(0.0, 0.0, 0.0, 0.0)
     # add the interaction to the conversation
     conversation.interactions.append(interaction)
     # update the conversation's interaction turns
@@ -145,14 +159,8 @@ def simulate_user_follow_up_question(conversation: UserBotConversation):
 You have a follow-up question, what would you ask the assistant? Reply with the follow-up question only."""
     # print(system_prompt)
     # convo to-this-point
-    user_query = ""
-    past_convo = create_conversation_history(conversation)
-    # turn the past_convo into a single string
-    for interaction in past_convo:
-        if interaction["role"] == "user":
-            user_query = user_query + "User: "+ interaction["content"][0]["text"] + "\n"
-        else:
-            user_query = user_query + "Assistant: "+ interaction["content"][0]["text"] + "\n"
+    user_query = create_convo_string(conversation)
+    print(system_prompt)
     
     # print(user_query)
     convo = complete_single_user_bot_interaction(convo, user_query, system_prompt)
@@ -160,7 +168,8 @@ You have a follow-up question, what would you ask the assistant? Reply with the 
     return convo.interactions[-1].bot_response
 
 def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 1):
-    convo = UserBotConversation([], conversation_seed)
+    # init a temp conversation object, with a unique id
+    convo = UserBotConversation(convo_id= uuid.uuid4(), interactions=[], conversation_seed= conversation_seed)
     # start the conversation
     convo = complete_single_user_bot_interaction(convo, convo.conversation_seed.user_query, system_prompt)
     interaction_count = 1
@@ -190,18 +199,92 @@ def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool 
     else:
         print(json.dumps(conversation, indent=4))
 
+def evaluate_whole_conversation(conversation: UserBotConversation):
+#  -> ConversationEvaluation:
+    # for all interactions in the conversation, find the interaction evaluations
+    # across the 4 dimensions of interaction evaluation, take the min value for each dimension
+    # summarise the interaction evaluations into a conversation evaluation
+    interaction_evaluations = []
+    for interaction in conversation.interactions:
+        interaction_evaluations.append(interaction.evaluation.to_dict())
+    
+    interaction_evaluation = {
+        "faithfulness": min([interaction_eval["faithfulness"] for interaction_eval in interaction_evaluations]),
+        "context_precision": min([interaction_eval["context_precision"] for interaction_eval in interaction_evaluations]),
+        "answer_relevancy": min([interaction_eval["answer_relevancy"] for interaction_eval in interaction_evaluations]),
+        "context_recall": min([interaction_eval["context_recall"] for interaction_eval in interaction_evaluations]),
+    }
+    # convert the interaction_evaluation to a string, so that it can be injected into the prompt
+    interaction_evaluation = str(interaction_evaluation).replace("{", "").replace("}", "").replace(",", "\n")
+
+    system_prompt = f"""Consider the following metrics:
+Faithfulness: factual consistency of the answer to the context (0-1)
+Context_precision: relevance of the retrieved context to the question (0-1)
+Answer_relevancy: relevance of the answer to the question (0-1)
+Context_recall: retriever's ability to retrieve necessary information (0-1)
+
+Bot scores:
+{interaction_evaluation}
+
+Provide an overall quality score (0-1) for the entire conversation based on whether the bot helped the user to achieve their original Job to be Done, needs, and motivations, and whether the bot answered the user's questions Faithfulness, precisely, and was relevant."""
+    system_prompt = system_prompt + """
+Return only the JSON result with keys:
+{
+"quality_score": float,
+"reasoning": str (within 30 words)
+}
+"""
+    user_query = create_convo_string(conversation)
+    print(user_query)
+    
+    # print(user_query)
+    convo = UserBotConversation(convo_id = "temp", interactions=[])
+    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
+
+    # return the last interaction
+    return convo.interactions[-1].bot_response
+
 if __name__ == "__main__":
-    # seed some conversations
-    job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
-    questions = sample_questions.sample_questions[2]['initial-questions']
-    print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
-    convos = []
-    # using TQDM to show a progress bar
-    for question in tqdm.tqdm(questions):
-        # create a conversation seed
-        seed = ConversationSeed(job_to_be_done, question)
-        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
-        convo.evaluation = ConversationEvaluation(0.8)
-        pretty_print_stored_conversation(convo.to_dict())
-        convos.append(convo)
-    store_simulated_conversations(convos)
+    # # seed some conversations
+    # job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
+    # questions = sample_questions.sample_questions[2]['initial-questions']
+    # print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
+    # convos = []
+    # # using TQDM to show a progress bar
+    # for question in tqdm.tqdm(questions):
+    #     # create a conversation seed
+    #     seed = ConversationSeed(job_to_be_done, question)
+    #     convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
+    #     convo.evaluation = ConversationEvaluation(0.8)
+    #     pretty_print_stored_conversation(convo.to_dict())
+    #     convos.append(convo)
+    # store_simulated_conversations(convos)
+
+
+    conv = conversations[0]
+    # turn the conversation into a UserBotConversation object
+    conv = UserBotConversation(
+        convo_id=conv["convo_id"],
+        interactions=[UserBotInteraction(
+            interaction["interaction_turn"],
+            interaction["user_query"],
+            interaction["bot_response"],
+            interaction["knowledge_used"],
+            InteractionEvaluation(
+                interaction["evaluation"]["faithfulness"],
+                interaction["evaluation"]["context_precision"],
+                interaction["evaluation"]["answer_relevancy"],
+                interaction["evaluation"]["context_recall"]
+            )
+        ) for interaction in conv["interactions"]],
+        conversation_seed=ConversationSeed(
+            conv["conversation_seed"]["job_to_be_done"],
+            conv["conversation_seed"]["user_query"]
+        ),
+        conversation_evaluation=ConversationEvaluation(
+            conv["evaluation"]["helpfulness"]
+        )
+    )
+    # pretty_print_stored_conversation(conv)
+    helpful = evaluate_whole_conversation(conv)
+    print(helpful)
