@@ -1,9 +1,12 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
+from config import heroku_url, local_url, get_running_environment
 
 add_logo("http://placekitten.com/120/120")
 
+if "running_environment" not in st.session_state:
+    st.session_state.running_environment = get_running_environment()
 
 metric_infos = [
     {"name": "faithfulness", "value": 0.9, "status": "pass"},
@@ -23,7 +26,10 @@ def traditional_meteric_row(metric_info):
     with col2:
         st.metric(metric_info["name"], metric_info["value"])
     with col3:
-        url = f"http://localhost:8501/Eval_deepdive?metric_name={metric_info['name']}"
+        if st.session_state.running_environment == "Heroku":
+            url = f"{heroku_url}/Eval_deepdive?metric_name={metric_info['name']}"
+        else:
+            url = f"{local_url}/Eval_deepdive?metric_name={metric_info['name']}"
         st.link_button("Detailed Eval", url)
 
 

@@ -10,9 +10,12 @@ import streamlit_authenticator as stauth
 import yaml
 from yaml.loader import SafeLoader
 from authenticator.authenticate import get_authenticator
+from config import get_running_environment
 
 if "bot_version" not in st.session_state:
     st.session_state.bot_version = "dumb"
+if "running_environment" not in st.session_state:
+    st.session_state.running_environment = get_running_environment()
 
 add_logo("http://placekitten.com/120/120")
 st.title('Welcome to the chatbot auto eval tool 🤖🔍🚀')

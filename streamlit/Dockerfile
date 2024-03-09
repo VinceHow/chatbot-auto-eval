@@ -10,21 +10,21 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 
 COPY requirements.txt .
-COPY app.py .
-COPY helpers.py .
-COPY backend ./backend
-COPY static ./static
+COPY 👋_Welcome.py .
+COPY pages ./pages
+COPY authenticator ./authenticator
+COPY config.yaml .
 COPY config.py .
 COPY .streamlit .streamlit
 
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-EXPOSE 80
-
-ENTRYPOINT [ "streamlit", "run", "app.py", \
-             "--browser.serverAddress", "0.0.0.0", \
-             "--server.enableCORS", "False", \
-             "--server.port", "80", \
-             "--server.fileWatcherType", "none", \
-             "--browser.gatherUsageStats", "false"]
+CMD streamlit run 👋_Welcome.py --server.port $PORT --server.address 0.0.0.0
+# ENTRYPOINT ["streamlit", "run", "👋_Welcome.py", "--server.port=${PORT}", "--server.address=0.0.0.0"]
+# ENTRYPOINT [ "streamlit", "run", "👋_Welcome.py", \
+#              "--browser.serverAddress", "0.0.0.0", \
+#              "--server.enableCORS", "False", \
+#              "--server.port", "80", \
+#              "--server.fileWatcherType", "none", \
+#              "--browser.gatherUsageStats", "false"]

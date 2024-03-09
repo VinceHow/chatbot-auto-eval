@@ -2,8 +2,12 @@ import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 import pandas as pd
+from config import heroku_url, local_url, get_running_environment
 
 add_logo("http://placekitten.com/120/120")
+
+if "running_environment" not in st.session_state:
+    st.session_state.running_environment = get_running_environment()
 
 TRADITIONAL_METRICS = ["faithfulness", "context_precision", "answer_relevancy", "context_recall"]
 
@@ -35,7 +39,10 @@ def extract_traditional_metrics(metric_name, convos):
             count_value += 1
         traditional_metric_dict["value"] = sum_value/count_value
         traditional_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
-        url = f"http://localhost:8501/Inspect_convo?convo_id={convo['id']}"
+        if st.session_state.running_environment == "Heroku":
+            url = f"{heroku_url}/Inspect_convo?convo_id={convo['id']}"
+        else:
+            url = f"{local_url}/Inspect_convo?convo_id={convo['id']}"
         traditional_metric_dict["convo_link"] = url
         traditional_metric_list.append(traditional_metric_dict)
     traditional_metric_df = pd.DataFrame(traditional_metric_list)
