@@ -159,7 +159,7 @@ def simulate_user_follow_up_question(conversation: UserBotConversation):
     convo = UserBotConversation([])
     system_prompt = f"""Imagine you are the user who started the below conversation, with the goal of completing the taks of: {conversation.conversation_seed.job_to_be_done}. 
 You have a follow-up question, what would you ask the assistant? Reply with the follow-up question only."""
-    print(system_prompt)
+    # print(system_prompt)
     # convo to-this-point
     user_query = ""
     past_convo = create_conversation_history(conversation)
@@ -170,7 +170,7 @@ You have a follow-up question, what would you ask the assistant? Reply with the 
         else:
             user_query = user_query + "Assistant: "+ interaction["content"][0]["text"] + "\n"
     
-    print(user_query)
+    # print(user_query)
     convo = complete_single_user_bot_interaction(convo, user_query, system_prompt)
     # return the last interaction
     return convo.interactions[-1].bot_response
