@@ -13,6 +13,7 @@ COPY requirements.txt .
 COPY 👋_Welcome.py .
 COPY pages ./pages
 COPY authenticator ./authenticator
+COPY conversations ./conversations
 COPY config.yaml .
 COPY config.py .
 COPY .streamlit .streamlit

@@ -1,82 +1,53 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
-import pandas as pd
-from config import heroku_url, local_url, get_running_environment
+from conversations.conversation_smart import all_conversations as smart_convos
+from conversations.conversation_dumb import all_conversations as dumb_convos
+from conversations.utils import extract_traditional_metrics_from_convos, extract_job_to_be_done_metrics
+from config import heroku_url, local_url, get_running_environment, traditional_metrics
 
 logo_url = ".static/RAGnarok_240.png" 
 
 add_logo(logo_url, 60)
 
+convos = {
+    "improved": smart_convos,
+    "raw": dumb_convos
+}
+
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()
 
-TRADITIONAL_METRICS = ["faithfulness", "context_precision", "answer_relevancy", "context_recall"]
 
-convo = {
-    "id": "1",
-    'conversation_seed': {'job_to_be_done': 'Discover new and unique snacks', 'user_query': 'What kind of snacks can I expect in each box?'}, 
-    'interactions': [
-        {'interaction_turn': 1, 'user_query': 'What kind of snacks can I expect in each box?', 'bot_response': "Each Snack 52 box contains a curated selection of premium, artisanal snacks from around the world. You'll discover unique flavors, healthy options, and indulgent treats tailored to your preferences. Our snack experts carefully source the finest snacks to delight your taste buds every month.", 'knowledge_used': [], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}
-        ], 
-    'interaction_turns': 3,
-    'evaluation': "passed"
-}
-
-convos = [convo]
-
-
-# extract metrics given convos
-def extract_traditional_metrics(metric_name, convos):
-    #construct a table sorting from value low to high
-    traditional_metric_list = []
-    for convo in convos:
-        traditional_metric_dict = dict()
-        traditional_metric_dict["conversation_id"] = convo["id"]
-        interactions = convo["interactions"]
-        sum_value = 0
-        count_value = 0
-        for interaction in interactions:
-            sum_value += interaction["evaluation"][metric_name]
-            count_value += 1
-        traditional_metric_dict["value"] = sum_value/count_value
-        traditional_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
-        if st.session_state.running_environment == "Heroku":
-            url = f"{heroku_url}/Inspect_convo?convo_id={convo['id']}"
-        else:
-            url = f"{local_url}/Inspect_convo?convo_id={convo['id']}"
-        traditional_metric_dict["convo_link"] = url
-        traditional_metric_list.append(traditional_metric_dict)
-    traditional_metric_df = pd.DataFrame(traditional_metric_list)
-    traditional_metric_df = traditional_metric_df.sort_values(by="value")
-    return traditional_metric_df
-
-
-
-def extract_job_to_be_done_metrics(metric_name, convos):
-    pass
-
-
-def display_detail_eval(metric_name):
-    st.markdown(f"### Detailed Eval for {metric_name}")
-    if metric_name in TRADITIONAL_METRICS:
-        metric_info = extract_traditional_metrics(metric_name, convos)
+def display_detail_eval(metric_name, bot_type):
+    st.markdown(f"### Detailed Eval for '{metric_name}' for bot version {bot_type}")
+    base_url = heroku_url if st.session_state.running_environment == "Heroku" else local_url
+    conversations = convos[bot_type]
+    if metric_name in traditional_metrics:
+        metric_info = extract_traditional_metrics_from_convos(metric_name, conversations, base_url)
+        avg_value = metric_info["value"].mean()
+        st.metric(metric_name, avg_value)
+        st.dataframe(metric_info, 
+                    column_config={
+                        "conversation_id": "Conversation ID",
+                        "value": st.column_config.NumberColumn(
+                            "Metric value",
+                            help="Avg result of the metric for the conversation",
+                        ),
+                        "convo_link": st.column_config.LinkColumn("Conversation URL", display_text="Open conversation"),
+                        "convo_history": "Conversation history"
+                        },
+                    hide_index=True)
     else:
-        metric_info = extract_job_to_be_done_metrics(metric_name, convos)
-    avg_value = metric_info["value"].mean()
-    st.metric(metric_name, avg_value)
-    st.dataframe(metric_info, 
-                 column_config={
-                    "conversation_id": "Conversation ID",
-                    "value": st.column_config.NumberColumn(
-                        "Metric value",
-                        help="Avg result of the metric for the conversation",
-                        # format="%d ⭐",
-                    ),
-                    "convo_link": st.column_config.LinkColumn("Conversation URL", display_text="Open conversation"),
-                    "convo_history": "Conversation history"
-                    },
-                hide_index=True)
+        metric_info = extract_job_to_be_done_metrics(metric_name, conversations, base_url)
+        metric_keys = metric_info["metric_list"].iloc[0]
+        column_config = {
+            "conversation_id": "Conversation ID",
+            "convo_link": st.column_config.LinkColumn("Conversation URL", display_text="Open conversation"),
+            "convo_history": "Conversation history"
+        }
+        column_config.update({key: st.column_config.NumberColumn(key, help="Metric value") for key in metric_keys})
+        st.dataframe(metric_info, column_config=column_config, hide_index=True)
 
 
 authenticator = get_authenticator()
@@ -86,8 +57,8 @@ if st.session_state["authentication_status"]:
     with st.sidebar:
         authenticator.logout()
         st.write(f'Welcome *{st.session_state["name"]}*')
-    if "metric_name" in st.query_params:
-        display_detail_eval(st.query_params["metric_name"])
+    if "metric_name" in st.query_params and "bot_type" in st.query_params:
+        display_detail_eval(st.query_params["metric_name"], st.query_params["bot_type"])
     else:
         st.error('Please select a metric to see the detailed eval')
         if st.button("Go back to dashboard"):

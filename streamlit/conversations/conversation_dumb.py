@@ -1,4 +1,4 @@
-conversation_1 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'How often will I receive my snack box?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'How often will I receive my snack box?', 'bot_response': "With Snack 52, you'll receive a fresh and exciting snack box delivered right to your doorstep every month. No matter which subscription option you choose - Classic, Deluxe, or Healthy - you can look forward to a new curated selection of premium snacks arriving like clockwork, month after month. Our convenient monthly deliveries ensure you'll always have a steady supply of delicious and unique snacks to satisfy your cravings.", 'knowledge_used': [{'id': '050f6fa1-34d7-40f7-aba6-5820766eef73',
+conversation_1 = {'id': 1, 'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'How often will I receive my snack box?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'How often will I receive my snack box?', 'bot_response': "With Snack 52, you'll receive a fresh and exciting snack box delivered right to your doorstep every month. No matter which subscription option you choose - Classic, Deluxe, or Healthy - you can look forward to a new curated selection of premium snacks arriving like clockwork, month after month. Our convenient monthly deliveries ensure you'll always have a steady supply of delicious and unique snacks to satisfy your cravings.", 'knowledge_used': [{'id': '050f6fa1-34d7-40f7-aba6-5820766eef73',
  'metadata': {'text': '2. Deluxe Box: Indulge in a more extensive assortment '
                       'of 18-20 premium snacks for $39.99 per month.'},
  'score': 0.818329871,
@@ -48,7 +48,7 @@ conversation_1 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done'
                       'wellness goals. Thank you, Snack 52!" - Emily, Chicago'},
  'score': 0.783595383,
  'values': []}], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}], 'evaluation': {'helpfulness': 0.8}}
-conversation_2 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'Is shipping included in the subscription price?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'Is shipping included in the subscription price?', 'bot_response': 'Yes, all of our subscription plans include free shipping. You can enjoy your snack boxes delivered right to your doorstep without any additional shipping costs.', 'knowledge_used': [{'id': '1c79ba61-a686-4aaa-a9b8-56d5a2aa13b8',
+conversation_2 = {'id': 2, 'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'Is shipping included in the subscription price?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'Is shipping included in the subscription price?', 'bot_response': 'Yes, all of our subscription plans include free shipping. You can enjoy your snack boxes delivered right to your doorstep without any additional shipping costs.', 'knowledge_used': [{'id': '1c79ba61-a686-4aaa-a9b8-56d5a2aa13b8',
  'metadata': {'text': 'All our subscription plans come with free shipping and '
                       'the flexibility to pause, skip, or cancel anytime.'},
  'score': 0.76328671,
@@ -94,7 +94,8 @@ conversation_2 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done'
                       'of 18-20 premium snacks for $39.99 per month.'},
  'score': 0.827900827,
  'values': []}], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}], 'evaluation': {'helpfulness': 0.8}}
-conversation_3 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'Can I customize my snack preferences?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'Can I customize my snack preferences?', 'bot_response': "Absolutely! At Snack 52, we understand that everyone has unique snacking preferences. That's why we offer a personalization quiz to tailor your snack box to your specific tastes and dietary needs. Whether you prefer sweet or savory, vegan or gluten-free options, we've got you covered. Our goal is to deliver a delightful snacking experience tailored just for you.", 'knowledge_used': [{'id': '13b22f1c-0a45-4335-9c7e-bb861ae8c8bf',
+
+conversation_3 = {'id':3, 'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'Can I customize my snack preferences?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'Can I customize my snack preferences?', 'bot_response': "Absolutely! At Snack 52, we understand that everyone has unique snacking preferences. That's why we offer a personalization quiz to tailor your snack box to your specific tastes and dietary needs. Whether you prefer sweet or savory, vegan or gluten-free options, we've got you covered. Our goal is to deliver a delightful snacking experience tailored just for you.", 'knowledge_used': [{'id': '13b22f1c-0a45-4335-9c7e-bb861ae8c8bf',
  'metadata': {'text': 'Snack 52 - Snacking, Reinvented.'},
  'score': 0.816183448,
  'values': []}, {'id': '95ffe0fc-536b-4736-9240-0206a0dc709f',
@@ -144,7 +145,8 @@ conversation_3 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done'
                       'Destination!'},
  'score': 0.755553126,
  'values': []}], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}], 'evaluation': {'helpfulness': 0.8}}
-conversation_4 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'How easy is it to manage my subscription online?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'How easy is it to manage my subscription online?', 'bot_response': 'With Snack 52, managing your subscription online is a breeze! You can easily pause, skip or cancel your subscription anytime through your online account. Our flexible plans put you in control, allowing you to customize your snack deliveries according to your preferences and schedule. Rest assured, we prioritize your convenience and satisfaction.', 'knowledge_used': [{'id': 'b008fd69-b0c5-4a11-aa53-2082832f9db1',
+
+conversation_4 = {'id':4, 'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'How easy is it to manage my subscription online?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'How easy is it to manage my subscription online?', 'bot_response': 'With Snack 52, managing your subscription online is a breeze! You can easily pause, skip or cancel your subscription anytime through your online account. Our flexible plans put you in control, allowing you to customize your snack deliveries according to your preferences and schedule. Rest assured, we prioritize your convenience and satisfaction.', 'knowledge_used': [{'id': 'b008fd69-b0c5-4a11-aa53-2082832f9db1',
  'metadata': {'text': 'Our Subscription Plans:'},
  'score': 0.757749379,
  'values': []}, {'id': '1c79ba61-a686-4aaa-a9b8-56d5a2aa13b8',
@@ -190,7 +192,8 @@ conversation_4 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done'
                       'the same way again.'},
  'score': 0.793816805,
  'values': []}], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}], 'evaluation': {'helpfulness': 0.8}}
-conversation_5 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'What are the available payment methods?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'What are the available payment methods?', 'bot_response': 'Snack 52 accepts all major credit cards (Visa, Mastercard, American Express, Discover) as well as PayPal for convenient and secure payment of your snack box subscription. We strive to provide a seamless checkout experience for our customers.', 'knowledge_used': [{'id': 'b008fd69-b0c5-4a11-aa53-2082832f9db1',
+
+conversation_5 = {'id':5, 'interaction_turns': 2, 'conversation_seed': {'job_to_be_done': 'Simplify my snack shopping process', 'user_query': 'What are the available payment methods?'}, 'interactions': [{'interaction_turn': 1, 'user_query': 'What are the available payment methods?', 'bot_response': 'Snack 52 accepts all major credit cards (Visa, Mastercard, American Express, Discover) as well as PayPal for convenient and secure payment of your snack box subscription. We strive to provide a seamless checkout experience for our customers.', 'knowledge_used': [{'id': 'b008fd69-b0c5-4a11-aa53-2082832f9db1',
  'metadata': {'text': 'Our Subscription Plans:'},
  'score': 0.663352847,
  'values': []}, {'id': '3fbc66f7-5e7b-4838-806a-179cdbb8c70d',
@@ -234,3 +237,5 @@ conversation_5 = {'interaction_turns': 2, 'conversation_seed': {'job_to_be_done'
                       'the same way again.'},
  'score': 0.825664341,
  'values': []}], 'evaluation': {'faithfulness': 0.0, 'context_precision': 0.0, 'answer_relevancy': 0.0, 'context_recall': 0.0}}], 'evaluation': {'helpfulness': 0.8}}
+
+all_conversations = [conversation_1, conversation_2, conversation_3, conversation_4, conversation_5]
