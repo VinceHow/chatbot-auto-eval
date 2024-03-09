@@ -3,7 +3,9 @@ from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 from streamlit_extras.stylable_container import stylable_container
 
-add_logo("http://placekitten.com/120/120")
+logo_url = "../assets/snack52_logo_transparent_240.png" 
+
+add_logo(logo_url, 60)
 
 authenticator = get_authenticator()
 authenticator._check_cookie()

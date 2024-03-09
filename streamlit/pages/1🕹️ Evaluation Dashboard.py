@@ -3,7 +3,9 @@ from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 from config import heroku_url, local_url, get_running_environment
 
-add_logo("http://placekitten.com/120/120")
+logo_url = "../assets/snack52_logo_transparent_240.png" 
+
+add_logo(logo_url, 60)
 
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()

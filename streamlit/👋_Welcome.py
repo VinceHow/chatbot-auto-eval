@@ -17,7 +17,10 @@ if "bot_version" not in st.session_state:
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()
 
-add_logo("http://placekitten.com/120/120")
+logo_url = "../assets/snack52_logo_transparent_240.png" 
+
+add_logo(logo_url, 60)
+
 st.title('Welcome to the chatbot auto eval tool 🤖🔍🚀')
 
 with open('./config.yaml') as file:
