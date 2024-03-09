@@ -75,6 +75,7 @@ class UserBotConversation:
     # export the conversation as a dictionary
     def to_dict(self):
         return {
+            "convo_id": self.convo_id,
             "interaction_turns": self.interaction_turns,
             "conversation_seed": self.conversation_seed.to_dict(),
             "interactions": [interaction.to_dict() for interaction in self.interactions],
