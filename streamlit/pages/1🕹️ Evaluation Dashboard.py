@@ -6,10 +6,10 @@ add_logo("http://placekitten.com/120/120")
 
 
 metric_infos = [
-    {"name": "Faithfulness", "value": 0.9, "status": "pass"},
-    {"name": "Context_precision", "value": 0.8, "status": "pass"},
-    {"name": "Answer_relevancy", "value": 0.3, "status": "fail"},
-    {"name": "Context_recall", "value": 0.1, "status": "fail"},
+    {"name": "faithfulness", "value": 0.9, "status": "pass"},
+    {"name": "context_precision", "value": 0.8, "status": "pass"},
+    {"name": "answer_relevancy", "value": 0.3, "status": "fail"},
+    {"name": "context_recall", "value": 0.1, "status": "fail"},
 ]
 
 
