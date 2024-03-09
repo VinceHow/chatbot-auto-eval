@@ -14,6 +14,7 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 import vector_db.pinecone_db as pinecone_db
 import snack_52.sample_questions as sample_questions
+from bot_eval import evaluate_single_interaction, InteractionEvaluation
 
 load_dotenv()
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
@@ -25,25 +26,7 @@ path_to_dumb_system_prompt = "../bot_core/bot_system_prompt_dumb.txt"
 with open(path_to_dumb_system_prompt, 'r') as file:
     dumb_system_prompt = file.read()
 
-class InteractionEvaluation:
-    # an interaction will be evaluated based on the following criteria:
-    # Faithfulness - Measures the factual consistency of the answer to the context based on the question.
-    # Context_precision - Measures how relevant the retrieved context is to the question, conveying the quality of the retrieval pipeline.
-    # Answer_relevancy - Measures how relevant the answer is to the question.
-    # Context_recall - Measures the retriever’s ability to retrieve all necessary information required to answer the question.
-    def __init__(self, faithfulness: float, context_precision: float, answer_relevancy: float, context_recall: float):
-        self.faithfulness = faithfulness
-        self.context_precision = context_precision
-        self.answer_relevancy = answer_relevancy
-        self.context_recall = context_recall
-    # export the evaluation as a dictionary
-    def to_dict(self):
-        return {
-            "faithfulness": self.faithfulness,
-            "context_precision": self.context_precision,
-            "answer_relevancy": self.answer_relevancy,
-            "context_recall": self.context_recall
-        }
+
 
 class UserBotInteraction:
     # an interaction has 4 parts: user query, bot response, knowledge base used, and automated evaluation
@@ -61,7 +44,8 @@ class UserBotInteraction:
             "user_query": self.user_query,
             "bot_response": self.bot_response,
             "knowledge_used": self.knowledge_used,
-            "evaluation": self.evaluation.to_dict()
+            # allow the evaluation to be exported as None dictionary
+            "evaluation": self.evaluation.to_dict() if self.evaluation else {0.0}
         }
 
 class ConversationSeed:
@@ -89,7 +73,7 @@ class ConversationEvaluation:
 
 class UserBotConversation:
     # a conversation is a list of interactions, plus some additional fields
-    def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed = None, conversation_evaluation: ConversationEvaluation = None):
+    def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed = None, conversation_evaluation: ConversationEvaluation = 0.0):
         self.conversation_seed = conversation_seed
         self.interactions = interactions
         self.interaction_turns = len(interactions)
@@ -100,7 +84,7 @@ class UserBotConversation:
             "interaction_turns": self.interaction_turns,
             "conversation_seed": self.conversation_seed.to_dict(),
             "interactions": [interaction.to_dict() for interaction in self.interactions],
-            "evaluation": self.evaluation.to_dict() if self.evaluation else None
+            "evaluation": self.evaluation.to_dict() if self.evaluation else 0.0
         }
 
 def fetch_knowledge_from_pinecone_db(query: str, namespace: str, top_k: int = 5):
@@ -146,8 +130,8 @@ def get_claude_response(query: str,
 
 def complete_single_user_bot_interaction(conversation: UserBotConversation, user_query: str, system_prompt: str):
     bot_response, knowledge_vectors = get_claude_response(user_query, system_prompt, conversation)
-    evaluation = InteractionEvaluation(0.0, 0.0, 0.0, 0.0)
-    interaction = UserBotInteraction(conversation.interaction_turns + 1, user_query, bot_response, knowledge_vectors, evaluation)
+    interaction = UserBotInteraction(conversation.interaction_turns + 1, user_query, bot_response, knowledge_vectors, InteractionEvaluation())
+    interaction.evaluation =evaluate_single_interaction(interaction.to_dict())
     # add the interaction to the conversation
     conversation.interactions.append(interaction)
     # update the conversation's interaction turns
@@ -188,22 +172,36 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
         interaction_count += 1
     return convo
 
-def store_simulated_conversation(conversation: UserBotConversation, id: str = None):
-    with open("../bot_core/conversations_dumb.py", "a") as file:
-        file.write(f"conversation_{id} = {conversation.to_dict()}\n")
+def store_simulated_conversations(conversation: list[UserBotConversation]):
+    with open("../bot_core/conversations_dumb_test.py", "a") as file:
+        file.write(f"conversations = [\n")
+        for convo in conversation:
+            file.write(f"{convo.to_dict()},\n")
+        file.write(f"]\n")
     return
+
+def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool = True):
+    if ignore_knowledge:
+        # show the conversation without the knowledge vectors, keeping the evaluation
+        convo = conversation.copy()
+        for interaction in convo["interactions"]:
+            interaction.pop("knowledge_used")
+        print(json.dumps(convo, indent=4))
+    else:
+        print(json.dumps(conversation, indent=4))
 
 if __name__ == "__main__":
     # seed some conversations
     job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
     questions = sample_questions.sample_questions[2]['initial-questions']
     print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
-    id = 1
+    convos = []
     # using TQDM to show a progress bar
     for question in tqdm.tqdm(questions):
         # create a conversation seed
         seed = ConversationSeed(job_to_be_done, question)
         convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
         convo.evaluation = ConversationEvaluation(0.8)
-        store_simulated_conversation(convo, id=id)
-        id += 1
+        pretty_print_stored_conversation(convo.to_dict())
+        convos.append(convo)
+    store_simulated_conversations(convos)
