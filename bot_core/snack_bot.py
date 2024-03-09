@@ -5,6 +5,7 @@ import json
 import sys
 import os
 import json
+import tqdm
 # Get the directory containing your current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
@@ -187,28 +188,22 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
         interaction_count += 1
     return convo
 
-def store_simulated_conversation(conversation: UserBotConversation):
-    # clear the file first
-    with open("../bot_core/conversations.txt", "w") as file:
-        file.write("[\n")
-    with open("../bot_core/conversations.txt", "a") as file:
-        # convert the dict to a string
-        convo = json.dumps(conversation.to_dict(), indent=4)
-        file.write(convo)
-    with open("../bot_core/conversations.txt", "a") as file:
-        file.write("]\n")
+def store_simulated_conversation(conversation: UserBotConversation, id: str = None):
+    with open("../bot_core/conversations_dumb.py", "a") as file:
+        file.write(f"conversation_{id} = {conversation.to_dict()}\n")
     return
 
 if __name__ == "__main__":
     # seed some conversations
-    job_to_be_done = sample_questions.sample_questions[0]['job-to-be-done']
-    question = sample_questions.sample_questions[0]['initial-questions'][0]
-    seed = ConversationSeed(job_to_be_done, question)
-    # print out the seed, on 2 lines
-    print(f"JTBD: {seed.job_to_be_done}\nQuestion: {seed.user_query}")
-    # simulate a conversation
-    convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 3)
-    # store the conversation
-    store_simulated_conversation(convo)
-    # print out the conversation
-    print(convo.to_dict())
+    job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
+    questions = sample_questions.sample_questions[2]['initial-questions']
+    print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
+    id = 1
+    # using TQDM to show a progress bar
+    for question in tqdm.tqdm(questions):
+        # create a conversation seed
+        seed = ConversationSeed(job_to_be_done, question)
+        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
+        convo.evaluation = ConversationEvaluation(0.8)
+        store_simulated_conversation(convo, id=id)
+        id += 1
