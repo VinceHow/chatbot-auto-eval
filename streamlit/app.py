@@ -4,9 +4,12 @@ from datetime import datetime
 
 # from openai import OpenAI
 from streamlit_option_menu import option_menu
+from openai import OpenAI
 
 import streamlit as st
 
+# Set up OpenAI API
+sync_client = OpenAI(api_key=str(st.secrets["OPENAI_API_KEY"]))
 
 def get_running_environment():
     # Check for ECS environment variables
@@ -16,54 +19,111 @@ def get_running_environment():
         return "LOCAL"
 
 # Initialise the context
-# Set a default model
-# if "openai_model" not in st.session_state:
-#     st.session_state.openai_model = []
-# if "logged_prompt" not in st.session_state:
-#     st.session_state.logged_prompt = []
-# if "feedback_key" not in st.session_state:
-#     st.session_state.feedback_key = 0
-# if "user_feedback" not in st.session_state:
-#     st.session_state.user_feedback = []
-# if "current_response" not in st.session_state:
-#     st.session_state.current_response = []
-# if "application" not in st.session_state:
-#     st.session_state.application = []
-# if "target_language" not in st.session_state:
-#     st.session_state.target_language = []
-# if "continue_to_chat" not in st.session_state:
-#     st.session_state.continue_to_chat = False
-# if "last_message" not in st.session_state:
-#     st.session_state.last_message = None
-# if "running_environment" not in st.session_state:
-#     st.session_state.running_environment = get_running_environment()
-# if "post_type" not in st.session_state:
-#     st.session_state.post_type = "static"
-# if "platform" not in st.session_state:
-#     st.session_state.platform = None
-# if "input_source" not in st.session_state:
-#     st.session_state.input_source = None
-# if "img_gen_feature" not in st.session_state:
-#     st.session_state.img_gen_feature = False
-# if "seed_idea" not in st.session_state:
-#     st.session_state.seed_idea = None
-# if "test_chat" not in st.session_state:
-#     st.session_state.test_chat = False
-# if "scraped_hashtag_videos" not in st.session_state:
-#     st.session_state.scraped_hashtag_videos = False
-# if "scraped_source_video" not in st.session_state:
-#     st.session_state.scraped_source_video = False
-# if "fail_to_download_tiktok_video" not in st.session_state:
-#     st.session_state.fail_to_download_tiktok_video = False
-
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+if "openai_model" not in st.session_state:
+    st.session_state.openai_model = "gpt-3.5-turbo"
 
 # ===================== CHAT =====================
 def chat_with_dummy_bot():
-    pass
-
-
+    st.subheader("Chat", divider=True)
+    number_of_messages = len(st.session_state.messages)
+    # Display chat messages from history on app rerun
+    message_counter = 0
+    for message in st.session_state.messages:
+        if message_counter == 0:
+            with st.chat_message(message["role"]):
+                st.markdown(st.session_state.original_prompt)
+        else:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        message_counter += 1
+    # Accept user input
+    if prompt := st.chat_input("What is up?"):
+        # Modify Prompt
+        if number_of_messages == 0:
+            st.session_state.original_prompt = prompt
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            # Modify Prompt
+            if number_of_messages == 0:
+                st.markdown(st.session_state.original_prompt)
+            else:
+                st.markdown(prompt)
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+            print("MODEL:", st.session_state.openai_model)
+            for response in sync_client.chat.completions.create(
+                model=st.session_state.openai_model,
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                stream=True,
+            ):
+                full_response += response.choices[0].delta.content or ""
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+        st.session_state.last_message = full_response
+        st.session_state.messages.append(
+            {"role": "assistant", "content": full_response}
+        )
+        if len(st.session_state.messages) != 0:
+            st.session_state.current_response = st.session_state.messages
+       
 def chat_with_final_bot():
-    pass
+    st.subheader("Chat", divider=True)
+    number_of_messages = len(st.session_state.messages)
+    # Display chat messages from history on app rerun
+    message_counter = 0
+    for message in st.session_state.messages:
+        if message_counter == 0:
+            with st.chat_message(message["role"]):
+                st.markdown(st.session_state.original_prompt)
+        else:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+        message_counter += 1
+    # Accept user input
+    if prompt := st.chat_input("What is up?"):
+        # Modify Prompt
+        if number_of_messages == 0:
+            st.session_state.original_prompt = prompt
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            # Modify Prompt
+            if number_of_messages == 0:
+                st.markdown(st.session_state.original_prompt)
+            else:
+                st.markdown(prompt)
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            full_response = ""
+            print("MODEL:", st.session_state.openai_model)
+            for response in sync_client.chat.completions.create(
+                model=st.session_state.openai_model,
+                messages=[
+                    {"role": m["role"], "content": m["content"]}
+                    for m in st.session_state.messages
+                ],
+                stream=True,
+            ):
+                full_response += response.choices[0].delta.content or ""
+                message_placeholder.markdown(full_response + "▌")
+            message_placeholder.markdown(full_response)
+        st.session_state.last_message = full_response
+        st.session_state.messages.append(
+            {"role": "assistant", "content": full_response}
+        )
+        if len(st.session_state.messages) != 0:
+            st.session_state.current_response = st.session_state.messages
 
 
 def auto_eval_flow():
@@ -72,7 +132,7 @@ def auto_eval_flow():
 
 def switch_fucntion(key):
     # clear some states depending on the set up later
-    pass
+    st.session_state.messages = []
 
 
 def main():
