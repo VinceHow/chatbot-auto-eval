@@ -1,10 +1,10 @@
 import anthropic
 import os
 from dotenv import load_dotenv
-import numpy as np
-import uuid
+import json
 import sys
 import os
+import json
 # Get the directory containing your current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
 # Get the parent directory
@@ -96,9 +96,9 @@ class UserBotConversation:
     # export the conversation as a dictionary
     def to_dict(self):
         return {
+            "interaction_turns": self.interaction_turns,
             "conversation_seed": self.conversation_seed.to_dict(),
             "interactions": [interaction.to_dict() for interaction in self.interactions],
-            "interaction_turns": self.interaction_turns,
             "evaluation": self.evaluation.to_dict() if self.evaluation else None
         }
 
@@ -122,7 +122,10 @@ def create_conversation_history(conversation: UserBotConversation):
         convo_history.append(bot_message)
     return convo_history
 
-def get_claude_response(query: str, system_prompt: str, conversation: UserBotConversation):
+def get_claude_response(query: str, 
+                        system_prompt: str, 
+                        conversation: UserBotConversation,
+                        temperature: float = 0.0,):
     convo_history = create_conversation_history(conversation)
     convo_history.append({"role": "user", "content": query})
     knowledge_string, knowledge_vectors = fetch_knowledge_from_pinecone_db(query, "dumb-bot-knowledge")
@@ -133,7 +136,7 @@ def get_claude_response(query: str, system_prompt: str, conversation: UserBotCon
         model="claude-3-sonnet-20240229",
         # model="claude-3-opus-20240229",
         max_tokens=200,
-        temperature=0,
+        temperature=temperature,
         system=system_prompt,
         messages= convo_history
     )
@@ -171,7 +174,7 @@ You have a follow-up question, what would you ask the assistant? Reply with the 
     # return the last interaction
     return convo.interactions[-1].bot_response
 
-def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 3):
+def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 1):
     convo = UserBotConversation([], conversation_seed)
     # start the conversation
     convo = complete_single_user_bot_interaction(convo, convo.conversation_seed.user_query, system_prompt)
@@ -185,8 +188,15 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
     return convo
 
 def store_simulated_conversation(conversation: UserBotConversation):
-    with open("../bot_core/conversations.py", "a") as file:
-        file.write(f"conversation = {conversation.to_dict()}\n")
+    # clear the file first
+    with open("../bot_core/conversations.txt", "w") as file:
+        file.write("[\n")
+    with open("../bot_core/conversations.txt", "a") as file:
+        # convert the dict to a string
+        convo = json.dumps(conversation.to_dict(), indent=4)
+        file.write(convo)
+    with open("../bot_core/conversations.txt", "a") as file:
+        file.write("]\n")
     return
 
 if __name__ == "__main__":
