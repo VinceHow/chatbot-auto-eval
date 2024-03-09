@@ -193,6 +193,16 @@ def store_simulated_conversation(conversation: UserBotConversation, id: str = No
         file.write(f"conversation_{id} = {conversation.to_dict()}\n")
     return
 
+def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool = True):
+    if ignore_knowledge:
+        # show the conversation without the knowledge vectors, keeping the evaluation
+        convo = conversation.copy()
+        for interaction in convo["interactions"]:
+            interaction.pop("knowledge_used")
+        print(json.dumps(convo, indent=4))
+    else:
+        print(json.dumps(conversation, indent=4))
+
 if __name__ == "__main__":
     # seed some conversations
     job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
