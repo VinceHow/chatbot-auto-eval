@@ -10,7 +10,7 @@ from datasets import Dataset
 import os
 import sys
 from conversations_dumb import *
-from snack_bot import InteractionEvaluation, pretty_print_stored_conversation
+import json
 
 # Get the directory containing your current script
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +21,27 @@ sys.path.append(parent_dir)
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
-def evaluate_single_interaction(interaction) -> InteractionEvaluation:
+class InteractionEvaluation:
+    # an interaction will be evaluated based on the following criteria:
+    # Faithfulness - Measures the factual consistency of the answer to the context based on the question.
+    # Context_precision - Measures how relevant the retrieved context is to the question, conveying the quality of the retrieval pipeline.
+    # Answer_relevancy - Measures how relevant the answer is to the question.
+    # Context_recall - Measures the retriever’s ability to retrieve all necessary information required to answer the question.
+    def __init__(self, faithfulness: float = 0, context_precision: float = 0, answer_relevancy: float = 0, context_recall: float = 0):
+        self.faithfulness = faithfulness
+        self.context_precision = context_precision
+        self.answer_relevancy = answer_relevancy
+        self.context_recall = context_recall
+    # export the evaluation as a dictionary
+    def to_dict(self):
+        return {
+            "faithfulness": self.faithfulness,
+            "context_precision": self.context_precision,
+            "answer_relevancy": self.answer_relevancy,
+            "context_recall": self.context_recall
+        }
+
+def evaluate_single_interaction(interaction:dict) -> InteractionEvaluation:
     knowledge_used = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
 
     interaction = Dataset.from_dict({
@@ -51,7 +71,15 @@ def evaluate_single_interaction(interaction) -> InteractionEvaluation:
 
     return interaction_evaluation
 
-
+def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool = True):
+    if ignore_knowledge:
+        # show the conversation without the knowledge vectors, keeping the evaluation
+        convo = conversation.copy()
+        for interaction in convo["interactions"]:
+            interaction.pop("knowledge_used")
+        print(json.dumps(convo, indent=4))
+    else:
+        print(json.dumps(conversation, indent=4))
 
 if __name__ == "__main__":
     conversations = [conversation_1]
