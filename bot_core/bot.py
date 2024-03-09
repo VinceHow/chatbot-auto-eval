@@ -86,7 +86,6 @@ class ConversationEvaluation:
             "helpfulness": self.helpfulness
         }
 
-
 class UserBotConversation:
     # a conversation is a list of interactions, plus some additional fields
     def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed, conversation_evaluation: ConversationEvaluation = None):
@@ -103,21 +102,34 @@ class UserBotConversation:
             "evaluation": self.evaluation.to_dict() if self.evaluation else None
         }
 
+def fetch_knowledge_from_pinecone_db(query: str, namespace: str, top_k: int = 5):
+    knowledge_vectors = pinecone_db.search_vector_db_for_similar_vectors(
+        query,
+        namespace,
+        top_k
+    )
+    knowledge_string = ""
+    for i in knowledge_vectors:
+        knowledge_string = knowledge_string + i["metadata"]["text"] + "\n"    
+    return knowledge_string, knowledge_vectors
 
 def get_claude_response(query: str, system_prompt: str, convo_history: list = []):
     messages = convo_history
     messages.append({"role": "user", "content": query})
+    knowledge_string, knowledge_vectors = fetch_knowledge_from_pinecone_db(query, "dumb-bot-knowledge")
+    # replace {KNOWLEDGE_FROM_PINECONE} with the knowledge string
+    system_prompt = system_prompt.replace("{KNOWLEDGE_FROM_PINECONE}", knowledge_string)
+    print(system_prompt)
     response = client.messages.create(
         model="claude-3-sonnet-20240229",
         # model="claude-3-opus-20240229",
         max_tokens=200,
         temperature=0,
         system=system_prompt,
-        messages=[
-            {"role": "user", "content": query}
-        ]
+        messages= convo_history
     )
-    return response.content[0].text
+    reponse_text = response.content[0].text
+    return reponse_text, knowledge_vectors
 
 if __name__ == "__main__":
     # seed some conversations
@@ -130,11 +142,9 @@ if __name__ == "__main__":
     convo = UserBotConversation([], seed)
     # create the first interaction
     user_query = seed.user_query
-    bot_response = get_claude_response(user_query, dumb_system_prompt)
-
-    knowledge_used = []
+    bot_response, knowledge_vectors = get_claude_response(user_query, dumb_system_prompt)
     evaluation = InteractionEvaluation(0.0, 0.0, 0.0, 0.0)
-    interaction = UserBotInteraction(1, user_query, bot_response, knowledge_used, evaluation)
+    interaction = UserBotInteraction(1, user_query, bot_response, knowledge_vectors, evaluation)
     # add the interaction to the conversation
     convo.interactions.append(interaction)
     # print out the conversation
