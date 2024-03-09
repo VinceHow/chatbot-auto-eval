@@ -16,6 +16,7 @@ COPY authenticator ./authenticator
 COPY config.yaml .
 COPY config.py .
 COPY .streamlit .streamlit
+COPY .static .static
 
 RUN python -m pip install --upgrade pip
 RUN pip install -r requirements.txt
