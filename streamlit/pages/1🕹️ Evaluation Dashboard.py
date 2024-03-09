@@ -76,7 +76,7 @@ def evaluation_dashboard():
         jobs_to_be_done_metrics = [metric["job-to-be-done"] for metric in jobs_to_be_done_info]
         jobs_to_be_done_extra_info = [metric["need-and-motivation"] for metric in jobs_to_be_done_info]
         for metric, extra_info in zip(jobs_to_be_done_metrics, jobs_to_be_done_extra_info):
-            jbt_metrics_df = extract_job_to_be_done_metrics(metric, conversations, base_url)
+            jbt_metrics_df = extract_job_to_be_done_metrics(metric, conversations, base_url, st.session_state.bot_version)
             metric_extracted = summarise_jtd_metrics(jbt_metrics_df)
             metric_extracted["info"] = extra_info
             metric_infos.append(metric_extracted)
@@ -86,7 +86,7 @@ def evaluation_dashboard():
         st.markdown("### Traditional RAG metrics")
         metric_infos = []
         for metrics in traditional_metrics:
-            traditional_metrics_df = extract_traditional_metrics_from_convos(metrics, conversations, base_url)
+            traditional_metrics_df = extract_traditional_metrics_from_convos(metrics, conversations, base_url, st.session_state.bot_version)
             metric_infos.append(summarise_traditional_metrics(traditional_metrics_df))
         for metric_info in metric_infos:
             traditional_meteric_row(metric_info, base_url)

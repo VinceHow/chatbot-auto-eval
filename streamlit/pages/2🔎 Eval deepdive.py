@@ -24,7 +24,7 @@ def display_detail_eval(metric_name, bot_type):
     base_url = heroku_url if st.session_state.running_environment == "Heroku" else local_url
     conversations = convos[bot_type]
     if metric_name in traditional_metrics:
-        metric_info = extract_traditional_metrics_from_convos(metric_name, conversations, base_url)
+        metric_info = extract_traditional_metrics_from_convos(metric_name, conversations, base_url, bot_type)
         avg_value = metric_info["value"].mean()
         st.metric(metric_name, avg_value)
         st.dataframe(metric_info, 
@@ -39,7 +39,7 @@ def display_detail_eval(metric_name, bot_type):
                         },
                     hide_index=True)
     else:
-        metric_info = extract_job_to_be_done_metrics(metric_name, conversations, base_url)
+        metric_info = extract_job_to_be_done_metrics(metric_name, conversations, base_url, bot_type)
         metric_keys = metric_info["metric_list"].iloc[0]
         column_config = {
             "conversation_id": "Conversation ID",

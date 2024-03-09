@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 
 # extract metrics given convos
 # @st.cache_data(show_spinner=False)
-def extract_traditional_metrics_from_convos(metric_name, convos, base_url):
+def extract_traditional_metrics_from_convos(metric_name, convos, base_url, bot_type):
     #construct a table sorting from value low to high
     traditional_metric_list = []
     for convo in convos:
@@ -19,7 +19,7 @@ def extract_traditional_metrics_from_convos(metric_name, convos, base_url):
         traditional_metric_dict["name"] = metric_name
         traditional_metric_dict["value"] = sum_value/count_value
         traditional_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
-        url = f"{base_url}/Inspect_convo?convo_id={convo['id']}"
+        url = f"{base_url}/Inspect_convo?convo_id={convo['id']}&bot_type={bot_type}"
         traditional_metric_dict["convo_link"] = url
         traditional_metric_list.append(traditional_metric_dict)
     traditional_metric_df = pd.DataFrame(traditional_metric_list)
@@ -36,7 +36,7 @@ def summarise_traditional_metrics(traditional_metric_df):
 
 
 # @st.cache_data(show_spinner=False)
-def extract_job_to_be_done_metrics(metric_name, convos, base_url):
+def extract_job_to_be_done_metrics(metric_name, convos, base_url, bot_type):
     # filter the convo to find the job to be done convos
     filtred_convos = []
     agg_result = defaultdict(int)
@@ -57,7 +57,7 @@ def extract_job_to_be_done_metrics(metric_name, convos, base_url):
             available_metrics.append(key)
         jtd_metric_dict["metric_list"] = available_metrics
         jtd_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
-        url = f"{base_url}/Inspect_convo?convo_id={convo['id']}"
+        url = f"{base_url}/Inspect_convo?convo_id={convo['id']}&bot_type={bot_type}"
         jtd_metric_dict["convo_link"] = url
         jtd_metric_list.append(jtd_metric_dict)
     jtd_metric_df = pd.DataFrame(jtd_metric_list)
@@ -80,3 +80,7 @@ def summarise_jtd_metrics(jtd_metric_df):
     return job_to_be_done_metric_dict
 
     
+def retrieve_convo_by_id(convo_id, convo_list):
+    for convo in convo_list:
+        if convo["id"] == convo_id:
+            return convo
