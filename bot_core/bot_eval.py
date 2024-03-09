@@ -41,6 +41,19 @@ class InteractionEvaluation:
             "context_recall": self.context_recall
         }
 
+class ConversationEvaluation:
+    # a conversation will be evaluated based on the following criteria:
+    # Helpfulness - Did the bot help the user achieve their JTBD?
+    def __init__(self, quality_score: float, reason: str = None):
+        self.quality_score = quality_score
+        self.reason = reason
+    # export the evaluation as a dictionary
+    def to_dict(self):
+        return {
+            "quality_score": self.quality_score,
+            "reason": self.reason
+        }
+
 def evaluate_single_interaction(interaction:dict) -> InteractionEvaluation:
     knowledge_used = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
 
@@ -82,13 +95,13 @@ def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool 
         print(json.dumps(conversation, indent=4))
 
 if __name__ == "__main__":
-    conversations = [conversation_1]
-                    #  , conversation_2, conversation_3, conversation_4, conversation_5]
+    # conversations = [conversation_1]
+    #                 #  , conversation_2, conversation_3, conversation_4, conversation_5]
     interaction_evals = []
-    for conversation in conversations:
-        for interaction in conversation["interactions"]:
-            interaction_eval = evaluate_single_interaction(interaction)
-            interaction_evals.append(interaction_eval)
-            # make the update to the hard copy of the interaction in the source file in code
-            interaction["evaluation"] = interaction_eval.to_dict()
-    pretty_print_stored_conversation(conversations[0])
+    # for conversation in conversations:
+    #     for interaction in conversation["interactions"]:
+    #         interaction_eval = evaluate_single_interaction(interaction)
+    #         interaction_evals.append(interaction_eval)
+    #         # make the update to the hard copy of the interaction in the source file in code
+    #         interaction["evaluation"] = interaction_eval.to_dict()
+    # pretty_print_stored_conversation(conversations[0])
