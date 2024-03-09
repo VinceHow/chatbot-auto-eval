@@ -88,7 +88,7 @@ class ConversationEvaluation:
 
 class UserBotConversation:
     # a conversation is a list of interactions, plus some additional fields
-    def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed, conversation_evaluation: ConversationEvaluation = None):
+    def __init__(self, interactions: list[UserBotInteraction], conversation_seed: ConversationSeed = None, conversation_evaluation: ConversationEvaluation = None):
         self.conversation_seed = conversation_seed
         self.interactions = interactions
         self.interaction_turns = len(interactions)
@@ -113,13 +113,22 @@ def fetch_knowledge_from_pinecone_db(query: str, namespace: str, top_k: int = 5)
         knowledge_string = knowledge_string + i["metadata"]["text"] + "\n"    
     return knowledge_string, knowledge_vectors
 
-def get_claude_response(query: str, system_prompt: str, convo_history: list = []):
-    messages = convo_history
-    messages.append({"role": "user", "content": query})
+def create_conversation_history(conversation: UserBotConversation):
+    convo_history = []
+    for interaction in conversation.interactions:
+        user_message = {"role": "user","content": [{"type": "text", "text": interaction.user_query}]}
+        bot_message = {"role": "assistant","content": [{"type": "text", "text": interaction.bot_response}]}
+        convo_history.append(user_message)
+        convo_history.append(bot_message)
+    return convo_history
+
+def get_claude_response(query: str, system_prompt: str, conversation: UserBotConversation):
+    convo_history = create_conversation_history(conversation)
+    convo_history.append({"role": "user", "content": query})
     knowledge_string, knowledge_vectors = fetch_knowledge_from_pinecone_db(query, "dumb-bot-knowledge")
     # replace {KNOWLEDGE_FROM_PINECONE} with the knowledge string
     system_prompt = system_prompt.replace("{KNOWLEDGE_FROM_PINECONE}", knowledge_string)
-    print(system_prompt)
+    # print(system_prompt)
     response = client.messages.create(
         model="claude-3-sonnet-20240229",
         # model="claude-3-opus-20240229",
@@ -131,6 +140,55 @@ def get_claude_response(query: str, system_prompt: str, convo_history: list = []
     reponse_text = response.content[0].text
     return reponse_text, knowledge_vectors
 
+def complete_single_user_bot_interaction(conversation: UserBotConversation, user_query: str, system_prompt: str):
+    bot_response, knowledge_vectors = get_claude_response(user_query, system_prompt, conversation)
+    evaluation = InteractionEvaluation(0.0, 0.0, 0.0, 0.0)
+    interaction = UserBotInteraction(conversation.interaction_turns + 1, user_query, bot_response, knowledge_vectors, evaluation)
+    # add the interaction to the conversation
+    conversation.interactions.append(interaction)
+    # update the conversation's interaction turns
+    conversation.interaction_turns = len(conversation.interactions)
+    return conversation
+
+def simulate_user_follow_up_question(conversation: UserBotConversation):
+    # init a temp conversation object
+    convo = UserBotConversation([])
+    system_prompt = f"""Imagine you are the user who started the below conversation, with the goal of completing the taks of: {conversation.conversation_seed.job_to_be_done}. 
+You have a follow-up question, what would you ask the assistant? Reply with the follow-up question only."""
+    print(system_prompt)
+    # convo to-this-point
+    user_query = ""
+    past_convo = create_conversation_history(conversation)
+    # turn the past_convo into a single string
+    for interaction in past_convo:
+        if interaction["role"] == "user":
+            user_query = user_query + "User: "+ interaction["content"][0]["text"] + "\n"
+        else:
+            user_query = user_query + "Assistant: "+ interaction["content"][0]["text"] + "\n"
+    
+    print(user_query)
+    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt)
+    # return the last interaction
+    return convo.interactions[-1].bot_response
+
+def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 3):
+    convo = UserBotConversation([], conversation_seed)
+    # start the conversation
+    convo = complete_single_user_bot_interaction(convo, convo.conversation_seed.user_query, system_prompt)
+    interaction_count = 1
+    # continue the conversation with a few more interactions
+    while interaction_count < max_interactions:
+        # simulate a user follow-up question
+        follow_up_q = simulate_user_follow_up_question(convo)
+        convo = complete_single_user_bot_interaction(convo, follow_up_q, system_prompt)
+        interaction_count += 1
+    return convo
+
+def store_simulated_conversation(conversation: UserBotConversation):
+    with open("../bot_core/conversations.py", "a") as file:
+        file.write(f"conversation = {conversation.to_dict()}\n")
+    return
+
 if __name__ == "__main__":
     # seed some conversations
     job_to_be_done = sample_questions.sample_questions[0]['job-to-be-done']
@@ -138,20 +196,9 @@ if __name__ == "__main__":
     seed = ConversationSeed(job_to_be_done, question)
     # print out the seed, on 2 lines
     print(f"JTBD: {seed.job_to_be_done}\nQuestion: {seed.user_query}")
-    # seed a conversation
-    convo = UserBotConversation([], seed)
-    # create the first interaction
-    user_query = seed.user_query
-    bot_response, knowledge_vectors = get_claude_response(user_query, dumb_system_prompt)
-    evaluation = InteractionEvaluation(0.0, 0.0, 0.0, 0.0)
-    interaction = UserBotInteraction(1, user_query, bot_response, knowledge_vectors, evaluation)
-    # add the interaction to the conversation
-    convo.interactions.append(interaction)
+    # simulate a conversation
+    convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 3)
+    # store the conversation
+    store_simulated_conversation(convo)
     # print out the conversation
-    print(f"Conversation Seed: {convo.conversation_seed.job_to_be_done}\n")
-    for interaction in convo.interactions:
-        print(f"User: {interaction.user_query}\nBot: {interaction.bot_response}\n")
-    # store the conversation in a list and append to a py file
-    # append the conversation to a py file
-    with open("../bot_core/conversations.py", "a") as file:
-        file.write(f"convo = {convo.to_dict()}\n")
+    print(convo.to_dict())
