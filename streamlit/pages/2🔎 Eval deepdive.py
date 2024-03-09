@@ -4,7 +4,9 @@ from authenticator.authenticate import get_authenticator
 import pandas as pd
 from config import heroku_url, local_url, get_running_environment
 
-add_logo("http://placekitten.com/120/120")
+logo_url = "../assets/RAGnarok_240.png" 
+
+add_logo(logo_url, 60)
 
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()

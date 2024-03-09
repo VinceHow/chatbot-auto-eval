@@ -3,7 +3,7 @@ from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 from streamlit_extras.stylable_container import stylable_container
 
-logo_url = "../assets/snack52_logo_transparent_240.png" 
+logo_url = "../assets/RAGnarok_240.png" 
 
 add_logo(logo_url, 60)
 

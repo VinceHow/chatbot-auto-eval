@@ -17,7 +17,7 @@ if "bot_version" not in st.session_state:
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()
 
-logo_url = "../assets/snack52_logo_transparent_240.png" 
+logo_url = "../assets/RAGnarok_240.png" 
 
 add_logo(logo_url, 60)
 
