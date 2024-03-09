@@ -2,6 +2,12 @@
 .vscode/
 .idea/
 
+# Ignore Mac system files
+.DS_Store
+
+# Ignore secrets
+.env
+
 # Ignore build output
 build/
 dist/
