@@ -32,8 +32,6 @@ path_to_dumb_system_prompt = "../bot_core/bot_system_prompt_dumb.txt"
 with open(path_to_dumb_system_prompt, 'r') as file:
     dumb_system_prompt = file.read()
 
-
-
 class UserBotInteraction:
     # an interaction has 4 parts: user query, bot response, knowledge base used, and automated evaluation
     def __init__(self, interaction_turn: int, user_query: str, bot_response: str, knowledge_used: list, evaluation: InteractionEvaluation):
@@ -154,16 +152,12 @@ def complete_single_user_bot_interaction(
 
 def simulate_user_follow_up_question(conversation: UserBotConversation):
     # init a temp conversation object
-    convo = UserBotConversation([])
+    convo = UserBotConversation(convo_id="", interactions=[])
     system_prompt = f"""Imagine you are the user who started the below conversation, with the goal of completing the taks of: {conversation.conversation_seed.job_to_be_done}. 
 You have a follow-up question, what would you ask the assistant? Reply with the follow-up question only."""
-    # print(system_prompt)
     # convo to-this-point
     user_query = create_convo_string(conversation)
-    print(system_prompt)
-    
-    # print(user_query)
-    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt)
+    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
     # return the last interaction
     return convo.interactions[-1].bot_response
 
@@ -179,6 +173,7 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
         follow_up_q = simulate_user_follow_up_question(convo)
         convo = complete_single_user_bot_interaction(convo, follow_up_q, system_prompt)
         interaction_count += 1
+    convo.evaluation = evaluate_whole_conversation(convo)
     return convo
 
 def store_simulated_conversations(conversation: list[UserBotConversation]):
@@ -241,50 +236,58 @@ Return only the JSON result with keys:
     convo = UserBotConversation(convo_id = "temp", interactions=[])
     convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
 
-    # return the last interaction
-    return convo.interactions[-1].bot_response
+    response_raw = convo.interactions[-1].bot_response
+    try:
+        # turn the bot response into a dictionary
+        response = json.loads(response_raw)
+    except:
+        print(convo.interactions[-1].bot_response)
+        response = {"quality_score": 0.0, "reasoning": response_raw}
+    # turn the response into a ConversationEvaluation object
+    response = ConversationEvaluation(response["quality_score"], response["reasoning"])
+    return response
 
 if __name__ == "__main__":
-    # # seed some conversations
-    # job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
-    # questions = sample_questions.sample_questions[2]['initial-questions']
+    # seed some conversations
+    job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
+    questions = sample_questions.sample_questions[2]['initial-questions']
     # print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
-    # convos = []
-    # # using TQDM to show a progress bar
-    # for question in tqdm.tqdm(questions):
-    #     # create a conversation seed
-    #     seed = ConversationSeed(job_to_be_done, question)
-    #     convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
-    #     convo.evaluation = ConversationEvaluation(0.8)
-    #     pretty_print_stored_conversation(convo.to_dict())
-    #     convos.append(convo)
-    # store_simulated_conversations(convos)
+    convos = []
+    # using TQDM to show a progress bar
+    for question in tqdm.tqdm(questions):
+        # create a conversation seed
+        seed = ConversationSeed(job_to_be_done, question)
+        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
+        convo.evaluation = ConversationEvaluation(0.8)
+        pretty_print_stored_conversation(convo.to_dict())
+        convos.append(convo)
+    store_simulated_conversations(convos)
 
 
-    conv = conversations[0]
-    # turn the conversation into a UserBotConversation object
-    conv = UserBotConversation(
-        convo_id=conv["convo_id"],
-        interactions=[UserBotInteraction(
-            interaction["interaction_turn"],
-            interaction["user_query"],
-            interaction["bot_response"],
-            interaction["knowledge_used"],
-            InteractionEvaluation(
-                interaction["evaluation"]["faithfulness"],
-                interaction["evaluation"]["context_precision"],
-                interaction["evaluation"]["answer_relevancy"],
-                interaction["evaluation"]["context_recall"]
-            )
-        ) for interaction in conv["interactions"]],
-        conversation_seed=ConversationSeed(
-            conv["conversation_seed"]["job_to_be_done"],
-            conv["conversation_seed"]["user_query"]
-        ),
-        conversation_evaluation=ConversationEvaluation(
-            conv["evaluation"]["helpfulness"]
-        )
-    )
-    # pretty_print_stored_conversation(conv)
-    helpful = evaluate_whole_conversation(conv)
-    print(helpful)
+    # conv = conversations[0]
+    # # turn the conversation into a UserBotConversation object
+    # conv = UserBotConversation(
+    #     convo_id=conv["convo_id"],
+    #     interactions=[UserBotInteraction(
+    #         interaction["interaction_turn"],
+    #         interaction["user_query"],
+    #         interaction["bot_response"],
+    #         interaction["knowledge_used"],
+    #         InteractionEvaluation(
+    #             interaction["evaluation"]["faithfulness"],
+    #             interaction["evaluation"]["context_precision"],
+    #             interaction["evaluation"]["answer_relevancy"],
+    #             interaction["evaluation"]["context_recall"]
+    #         )
+    #     ) for interaction in conv["interactions"]],
+    #     conversation_seed=ConversationSeed(
+    #         conv["conversation_seed"]["job_to_be_done"],
+    #         conv["conversation_seed"]["user_query"]
+    #     ),
+    #     conversation_evaluation=ConversationEvaluation(
+    #         conv["evaluation"]["helpfulness"]
+    #     )
+    # )
+    # # pretty_print_stored_conversation(conv)
+    # helpful = evaluate_whole_conversation(conv)
+    # print(helpful)
