@@ -140,8 +140,8 @@ def main():
     menu_options = option_menu(
         menu_title=None,
         options=[
-            "Draft bot",
             "Auto eval flow",
+            "Draft bot",
             "Final bot",
         ],
         icons=[
@@ -156,12 +156,12 @@ def main():
         key="menu",
     )
     match menu_options:
-        case "Draft bot":
-            st.title("📝 Draft bot")
-            chat_with_dummy_bot()
         case "Auto eval flow":
             st.title("🔍 Auto eval flow")
             auto_eval_flow()
+        case "Draft bot":
+            st.title("📝 Draft bot")
+            chat_with_dummy_bot()
         case "Final bot":
             st.title("🚀 Final bot")
             chat_with_final_bot()
