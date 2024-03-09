@@ -21,7 +21,7 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 client = anthropic.Anthropic()
 
 # open the doc and read content as string
-path_to_dumb_system_prompt = "../bot_core/dumb_bot_system_prompt.txt"
+path_to_dumb_system_prompt = "../bot_core/bot_system_prompt_dumb.txt"
 with open(path_to_dumb_system_prompt, 'r') as file:
     dumb_system_prompt = file.read()
 
