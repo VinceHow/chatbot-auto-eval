@@ -11,7 +11,9 @@ import yaml
 from yaml.loader import SafeLoader
 
 if "authentication_status" not in st.session_state:
-    st.session_state.authentication_status = None
+    st.session_state.authentication_status = False
+if "bot_version" not in st.session_state:
+    st.session_state.bot_version = "dumb"
 
 add_logo("http://placekitten.com/120/120")
 st.title('Welcome to the chatbot auto eval tool 🤖🔍🚀')
