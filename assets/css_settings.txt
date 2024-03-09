@@ -1,1 +1,3 @@
-background colour: #FACF11
+/* General styles - to be added to front-end */
+background-color: #FACF11
+font: Work Sans 
