@@ -3,7 +3,7 @@ import streamlit as st
 from collections import defaultdict
 
 # extract metrics given convos
-# @st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def extract_traditional_metrics_from_convos(metric_name, convos, base_url, bot_type):
     #construct a table sorting from value low to high
     traditional_metric_list = []
@@ -35,7 +35,7 @@ def summarise_traditional_metrics(traditional_metric_df):
     return summary_metric
 
 
-# @st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def extract_job_to_be_done_metrics(metric_name, convos, base_url, bot_type):
     # filter the convo to find the job to be done convos
     filtred_convos = []
@@ -50,6 +50,7 @@ def extract_job_to_be_done_metrics(metric_name, convos, base_url, bot_type):
         jtd_metric_dict["name"] = metric_name
         jtd_metric_dict["quality_score"] = convo["evaluation"]["quality_score"]
         jtd_metric_dict["reasoning"] = convo["evaluation"]["reasoning"]
+        jtd_metric_dict["convo_start"] = interactions[0]["user_query"]
         jtd_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
         url = f"{base_url}/Inspect_convo?convo_id={convo['convo_id']}&bot_type={bot_type}"
         jtd_metric_dict["convo_link"] = url

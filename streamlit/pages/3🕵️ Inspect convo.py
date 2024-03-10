@@ -68,20 +68,18 @@ def display_convo_with_eval(convo_id, bot_type):
     convo = retrieve_convo_by_id(convo_id, convos[bot_type])
     interactions = convo["interactions"]
     for interaction in interactions:
-        user_message = st.chat_message("User", avatar="👤")
-        thought_message = st.chat_message("Assistant context", avatar="🧠")
+        user_message = st.chat_message("User", avatar="🤖")
         assisstant_message = st.chat_message("Assistant", avatar="🍭")
         user_message.write(interaction["user_query"])
         assisstant_message.write(interaction["bot_response"])
-        texts = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
-        thought_message.write(texts)
         with stylable_container(
             key="container_with_border",
             css_styles="""
                 {
                     border: 1px solid rgba(49, 51, 63, 0.2);
                     border-radius: 0.5rem;
-                    padding: calc(1em - 1px)
+                    padding: calc(1em - 1px);
+                    background-color: #f5f5f5;
                 }
                 """,
         ):
@@ -90,15 +88,19 @@ def display_convo_with_eval(convo_id, bot_type):
             col_count = 0
             for metric in interaction["evaluation"]:
                 with cols[col_count]:
-                    st.metric(metric, interaction["evaluation"][metric])
+                    st.metric(metric, round(interaction["evaluation"][metric], 2))
                 col_count += 1
+        thought_message = st.chat_message("Assistant context", avatar="🧠")
+        texts = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
+        thought_message.json(texts, expanded=False)
+        st.divider()
     with stylable_container(
         key="container_with_border",
         css_styles="""
             {
                 border: 1px solid rgba(49, 51, 63, 0.2);
                 border-radius: 0.5rem;
-                padding: calc(1em - 1px)
+                padding: calc(1em - 1px);
             }
             """,
         ):
@@ -108,8 +110,11 @@ def display_convo_with_eval(convo_id, bot_type):
         else:
             donut_color = 'red'
         donut_chart = make_donut(convo["evaluation"]["quality_score"], "quality_score", donut_color)
-        st.write(metric)
-        st.altair_chart(donut_chart)
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.altair_chart(donut_chart)
+        with col2:
+            st.write(convo["evaluation"]["reasoning"])
     return None
 
 
