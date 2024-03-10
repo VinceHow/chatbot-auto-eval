@@ -74,13 +74,17 @@ def evaluate_single_interaction(interaction:dict) -> InteractionEvaluation:
             context_recall,
         ],
     )
-
+    # fill the InteractionEvaluation object with the evaluation results
     interaction_evaluation = InteractionEvaluation(
         faithfulness=eval_result["faithfulness"],
         context_precision=eval_result["context_precision"],
         answer_relevancy=eval_result["answer_relevancy"],
         context_recall=eval_result["context_recall"],
     )
+    # fill nan results with 0.0
+    for key, value in interaction_evaluation.to_dict().items():
+        if value != value:
+            interaction_evaluation.__dict__[key] = 0.0
 
     return interaction_evaluation
 
