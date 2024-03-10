@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
-from conversations.conversation_smart import all_conversations as smart_convos
-from conversations.conversation_dumb import all_conversations as dumb_convos
+from conversations.conversation_smart import smart_conversations
+from conversations.conversation_dumb import dumb_conversations
 from streamlit_extras.stylable_container import stylable_container
 from conversations.utils import retrieve_convo_by_id
 import pandas as pd
@@ -13,8 +13,8 @@ logo_url = '.static/RAGnarok_240.png'
 add_logo(logo_url, 60)
 
 convos = {
-    "improved": smart_convos,
-    "raw": dumb_convos,
+    "improved": smart_conversations,
+    "raw": dumb_conversations,
 }
 
 authenticator = get_authenticator()
@@ -65,7 +65,7 @@ def make_donut(input_response, input_text, input_color):
 
 
 def display_convo_with_eval(convo_id, bot_type):
-    convo = retrieve_convo_by_id(int(convo_id), convos[bot_type])
+    convo = retrieve_convo_by_id(convo_id, convos[bot_type])
     interactions = convo["interactions"]
     for interaction in interactions:
         user_message = st.chat_message("User", avatar="👤")
@@ -103,14 +103,13 @@ def display_convo_with_eval(convo_id, bot_type):
             """,
         ):
         st.markdown("Overall conversation evaluation")
-        for metric in convo["evaluation"]:
-            if convo["evaluation"][metric]>0.5:
-                donut_color = 'green'
-            else:
-                donut_color = 'red'
-            donut_chart = make_donut(convo["evaluation"][metric], metric, donut_color)
-            st.write(metric)
-            st.altair_chart(donut_chart)
+        if convo["evaluation"]["quality_score"]>0.5:
+            donut_color = 'green'
+        else:
+            donut_color = 'red'
+        donut_chart = make_donut(convo["evaluation"]["quality_score"], "quality_score", donut_color)
+        st.write(metric)
+        st.altair_chart(donut_chart)
     return None
 
 

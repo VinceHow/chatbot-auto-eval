@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
-from conversations.conversation_smart import all_conversations as smart_convos
-from conversations.conversation_dumb import all_conversations as dumb_convos
+from conversations.conversation_smart import smart_conversations
+from conversations.conversation_dumb import dumb_conversations
 from conversations.utils import extract_traditional_metrics_from_convos, extract_job_to_be_done_metrics
 from config import heroku_url, local_url, get_running_environment, traditional_metrics
 
@@ -11,8 +11,8 @@ logo_url = '.static/RAGnarok_240.png'
 add_logo(logo_url, 60)
 
 convos = {
-    "improved": smart_convos,
-    "raw": dumb_convos
+    "improved": smart_conversations,
+    "raw": dumb_conversations
 }
 
 if "running_environment" not in st.session_state:
@@ -40,13 +40,13 @@ def display_detail_eval(metric_name, bot_type):
                     hide_index=True)
     else:
         metric_info = extract_job_to_be_done_metrics(metric_name, conversations, base_url, bot_type)
-        metric_keys = metric_info["metric_list"].iloc[0]
         column_config = {
             "conversation_id": "Conversation ID",
             "convo_link": st.column_config.LinkColumn("Conversation URL", display_text="Open conversation"),
-            "convo_history": "Conversation history"
+            "convo_history": "Conversation history",
+            "quality_score": "Quality score",
+            "reasoning": "Reasoning"
         }
-        column_config.update({key: st.column_config.NumberColumn(key, help="Metric value") for key in metric_keys})
         st.dataframe(metric_info, column_config=column_config, hide_index=True)
 
 

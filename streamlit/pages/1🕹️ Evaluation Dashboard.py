@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
-from conversations.conversation_smart import all_conversations as smart_convos
-from conversations.conversation_dumb import all_conversations as dumb_convos
+from conversations.conversation_smart import smart_conversations
+from conversations.conversation_dumb import dumb_conversations
 from conversations.utils import extract_traditional_metrics_from_convos, summarise_traditional_metrics, extract_job_to_be_done_metrics, summarise_jtd_metrics
 from config import heroku_url, local_url, get_running_environment, traditional_metrics, jobs_to_be_done_info
 
@@ -16,8 +16,8 @@ if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()
 
 convos = {
-    "improved": smart_convos,
-    "raw": dumb_convos
+    "improved": smart_conversations,
+    "raw": dumb_conversations
 }
 
 
