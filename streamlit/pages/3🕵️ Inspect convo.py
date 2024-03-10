@@ -5,6 +5,8 @@ from conversations.conversation_smart import all_conversations as smart_convos
 from conversations.conversation_dumb import all_conversations as dumb_convos
 from streamlit_extras.stylable_container import stylable_container
 from conversations.utils import retrieve_convo_by_id
+import pandas as pd
+import altair as alt
 
 logo_url = r'streamlit/.static/RAGnarok_240.png'
 
@@ -17,6 +19,49 @@ convos = {
 
 authenticator = get_authenticator()
 authenticator._check_cookie()
+
+
+def make_donut(input_response, input_text, input_color):
+    if input_color == 'blue':
+        chart_color = ['#29b5e8', '#155F7A']
+    if input_color == 'green':
+        chart_color = ['#27AE60', '#12783D']
+    if input_color == 'orange':
+        chart_color = ['#F39C12', '#875A12']
+    if input_color == 'red':
+        chart_color = ['#E74C3C', '#781F16']
+
+    source = pd.DataFrame({
+        "Topic": ['', input_text],
+        "% value": [100-input_response, input_response]
+    })
+    source_bg = pd.DataFrame({
+        "Topic": ['', input_text],
+        "% value": [100, 0]
+    })
+
+    plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=25).encode(
+        theta="% value",
+        color= alt.Color("Topic:N",
+                        scale=alt.Scale(
+                            #domain=['A', 'B'],
+                            domain=[input_text, ''],
+                            # range=['#29b5e8', '#155F7A']),  # 31333F
+                            range=chart_color),
+                        legend=None),
+    ).properties(width=130, height=130)
+
+    text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=32, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response}'))
+    plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
+        theta="% value",
+        color= alt.Color("Topic:N",
+                        scale=alt.Scale(
+                            # domain=['A', 'B'],
+                            domain=[input_text, ''],
+                            range=chart_color),  # 31333F
+                        legend=None),
+    ).properties(width=130, height=130)
+    return plot_bg + plot + text
 
 
 def display_convo_with_eval(convo_id, bot_type):
@@ -59,7 +104,13 @@ def display_convo_with_eval(convo_id, bot_type):
         ):
         st.markdown("Overall conversation evaluation")
         for metric in convo["evaluation"]:
-            st.metric(metric, convo["evaluation"][metric])
+            if convo["evaluation"][metric]>0.5:
+                donut_color = 'green'
+            else:
+                donut_color = 'red'
+            donut_chart = make_donut(convo["evaluation"][metric], metric, donut_color)
+            st.write(metric)
+            st.altair_chart(donut_chart)
     return None
 
 
