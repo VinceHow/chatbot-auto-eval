@@ -6,7 +6,7 @@ from conversations.conversation_dumb import all_conversations as dumb_convos
 from streamlit_extras.stylable_container import stylable_container
 from conversations.utils import retrieve_convo_by_id
 
-logo_url = ".static/RAGnarok_240.png" 
+logo_url = r'streamlit/.static/RAGnarok_240.png'
 
 add_logo(logo_url, 60)
 

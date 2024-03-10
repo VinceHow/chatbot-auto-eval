@@ -36,3 +36,4 @@ yarn.lock
 *secrets.toml
 *__pycache__/
 streamlit/config.yaml
+config.yaml

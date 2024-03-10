@@ -6,7 +6,7 @@ from conversations.conversation_dumb import all_conversations as dumb_convos
 from conversations.utils import extract_traditional_metrics_from_convos, summarise_traditional_metrics, extract_job_to_be_done_metrics, summarise_jtd_metrics
 from config import heroku_url, local_url, get_running_environment, traditional_metrics, jobs_to_be_done_info
 
-logo_url = ".static/RAGnarok_240.png" 
+logo_url = r'streamlit/.static/RAGnarok_240.png'
 
 add_logo(logo_url, 60)
 
