@@ -104,13 +104,17 @@ def create_conversation_history(conversation: UserBotConversation) -> list[dict]
 def get_claude_response(query: str, 
                         system_prompt: str, 
                         conversation: UserBotConversation,
+                        namespace:str,
+                        pull_knowledge: bool = True,
                         temperature: float = 0.0,):
     convo_history = create_conversation_history(conversation)
     convo_history.append({"role": "user", "content": query})
-    knowledge_string, knowledge_vectors = fetch_knowledge_from_pinecone_db(query, "dumb-bot-knowledge")
-    # replace {KNOWLEDGE_FROM_PINECONE} with the knowledge string
-    system_prompt = system_prompt.replace("{KNOWLEDGE_FROM_PINECONE}", knowledge_string)
-    # print(system_prompt)
+    if pull_knowledge:
+        knowledge_string, knowledge_vectors = fetch_knowledge_from_pinecone_db(query, namespace, top_k=5)
+        # replace {KNOWLEDGE_FROM_PINECONE} with the knowledge string
+        system_prompt = system_prompt.replace("{KNOWLEDGE_FROM_PINECONE}", knowledge_string)
+    else:
+        knowledge_vectors = []
     response = client.messages.create(
         # model="claude-3-sonnet-20240229",
         model="claude-3-opus-20240229",
@@ -136,9 +140,17 @@ def create_convo_string(conversation: UserBotConversation):
 def complete_single_user_bot_interaction(
         conversation: UserBotConversation, 
         user_query: str, 
-        system_prompt: str, 
+        system_prompt: str,
+        namespace: str,
+        pull_knowledge: bool = True,
         run_evaluation: bool = True):
-    bot_response, knowledge_vectors = get_claude_response(user_query, system_prompt, conversation)
+    bot_response, knowledge_vectors = get_claude_response(
+        user_query, 
+        system_prompt,
+        conversation,
+        namespace,
+        pull_knowledge=pull_knowledge,
+        )
     interaction = UserBotInteraction(conversation.interaction_turns + 1, user_query, bot_response, knowledge_vectors, InteractionEvaluation())
     if run_evaluation:
         interaction.evaluation =evaluate_single_interaction(interaction.to_dict())
@@ -158,21 +170,45 @@ You have a follow-up question, what would you ask the assistant?
 Reply with the follow-up question only and nothing else."""
     # convo to-this-point
     user_query = create_convo_string(conversation)
-    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
+    convo = complete_single_user_bot_interaction(
+        convo, 
+        user_query, 
+        system_prompt,
+        namespace= "", # not needed
+        pull_knowledge=False, # not needed
+        run_evaluation=False # not needed
+        )
     # return the last interaction
     return convo.interactions[-1].bot_response
 
-def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 1):
+def simulate_user_bot_conversation(conversation_seed: ConversationSeed, 
+                                   system_prompt: str,
+                                   namespace: str, 
+                                   max_interactions: int = 1):
     # init a temp conversation object, with a unique id
     convo = UserBotConversation(convo_id= str(uuid.uuid4()), interactions=[], conversation_seed= conversation_seed)
     # start the conversation
-    convo = complete_single_user_bot_interaction(convo, convo.conversation_seed.user_query, system_prompt)
+    convo = complete_single_user_bot_interaction(
+        convo, 
+        convo.conversation_seed.user_query, 
+        system_prompt,
+        namespace= namespace, # use this to swap between different knowledge bases
+        pull_knowledge=True, # pull knowledge from Pinecone
+        run_evaluation=True # run the evaluation
+        )
     interaction_count = 1
     # continue the conversation with a few more interactions
     while interaction_count < max_interactions:
         # simulate a user follow-up question
         follow_up_q = simulate_user_follow_up_question(convo)
-        convo = complete_single_user_bot_interaction(convo, follow_up_q, system_prompt)
+        convo = complete_single_user_bot_interaction(
+            convo, 
+            follow_up_q, 
+            system_prompt,
+            namespace= namespace, # use this to swap between different knowledge bases
+            pull_knowledge=True, # pull knowledge from Pinecone
+            run_evaluation=True # run the evaluation
+            )
         interaction_count += 1
     convo.evaluation = evaluate_whole_conversation(convo)
     return convo
@@ -237,7 +273,14 @@ Return only the JSON result with keys, and nothing else:
 """
     user_query = create_convo_string(conversation)    
     convo = UserBotConversation(convo_id = "temp", interactions=[])
-    convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
+    convo = complete_single_user_bot_interaction(
+        convo, 
+        user_query,
+        system_prompt,
+        namespace= "", # not needed 
+        pull_knowledge=False, # not needed
+        run_evaluation=False # not needed
+        )
 
     response_raw = convo.interactions[-1].bot_response
     try:
@@ -254,7 +297,7 @@ if __name__ == "__main__":
     # seed some conversations
     job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
     # get 2 initial questions for the job to be done
-    questions = [sample_questions.sample_questions[2]['initial-questions'][0]]
+    questions = sample_questions.sample_questions[2]['initial-questions']
     print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
     convos = []
     path = "../bot_core/conversations_dumb.py"
@@ -262,7 +305,12 @@ if __name__ == "__main__":
     for question in tqdm.tqdm(questions):
         # create a conversation seed
         seed = ConversationSeed(job_to_be_done, question)
-        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, max_interactions=3)       
+        convo = simulate_user_bot_conversation(
+            seed, 
+            dumb_system_prompt,
+            namespace="dumb-bot-knowledge",
+            max_interactions=3
+            )       
         # pretty_print_stored_conversation(convo.to_dict())
         convos.append(convo)
     store_simulated_conversations(convos, delete_first=True)
