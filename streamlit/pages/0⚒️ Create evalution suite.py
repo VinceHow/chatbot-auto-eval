@@ -39,7 +39,7 @@ def user_input_flow():
             st.write("Reading knowledge base...")
             # display a chunk of knowledge base
             time.sleep(1)
-            st.write("Simulating mutli-turn conversation with desired bot...")
+            st.write("Simulating multi-turn conversation with desired bot...")
             # diplay a conversation
             time.sleep(3)
             st.write("Running evaluation metrics...")
