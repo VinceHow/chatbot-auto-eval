@@ -214,13 +214,13 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed,
     convo.evaluation = evaluate_whole_conversation(convo)
     return convo
 
-def store_simulated_conversations(conversation: list[UserBotConversation], file_path: str = "../bot_core/conversations_dumb.py", delete_first: bool = False):
+def store_simulated_conversations(conversations: list[UserBotConversation], file_path: str = "../bot_core/conversations_dumb.py", delete_first: bool = False):
     if delete_first:
         # delete the contents of the file
         open(file_path, "w").close()
     with open(file_path, "a") as file:
         file.write(f"conversations = [\n")
-        for convo in conversation:
+        for convo in conversations:
             file.write(f"{convo.to_dict()},\n")
         file.write(f"]\n")
     return
@@ -322,7 +322,7 @@ def run_end_to_end_eval_for_bot(
             )
         convos.append(convo)
     # store the conversation
-    store_simulated_conversations(convo, file_path, delete_first)
+    store_simulated_conversations(convos, file_path, delete_first)
     return
 
 if __name__ == "__main__":
