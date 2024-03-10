@@ -1,6 +1,6 @@
 # RAGnarok
 
-RAGnarok offers an automated testing and evaluation of LLM chatbots using Retrieval-Augmented Generation (RAG). Think Selenium, but for LLM finetuning.
+RAGnarok offers an automated testing suite for AI-powered applications. Think Selenium, but for LLMs.
 
 Project submitted for [Encode AI Hackathon, 2024](https://www.encode.club/ai-hackathon)
 
@@ -11,11 +11,13 @@ Authored by:
 
 ## Summary
 
-It is easy to spin up a RAG-based application as a proof-of-concept, but there is often a long tail of edge cases that fail, and need to be solved before the application is production ready. In addition, these edge cases need to be manually tested for each new deployment of the prompt / vector database, which becomes a huge time sink.
+AI-powered chatbots often go wrong. For example, in 2023 a Chevrolet chatbot promised to sell a customer a $76K Chevy Tahoe for $1!
 
-There is a massive opportunity for RAG-based applications - with ~$400B productivity uplift estimated to be gained from customer service operations improvements.
+Customer facing chatbots are risky becuase they can hallucinate, are suspect to manipulation, and are fundamentally unpredictable. There is often a long tail of edge cases that need to be solved before the application is production ready. These edge cases need to be manually tested for each new deployment of the prompt / vector database, which becomes a huge time sink.
 
-Against this, RAGnarok provides an automated testing and evaluation framework that serves two functions:
+There is a massive opportunity for customer facing chatbots - with ~$400B productivity uplift estimated to be gained from customer service operations improvements.
+
+You wouldn't deploy modern applications without an automated test suite, so why not do the same for an AI-powered application?Against this, RAGnarok provides an automated testing and evaluation framework for AI-powered applications that serves two functions:
 
 1. Generates test cases against 'jobs to be done' defined by the business user
 2. Evaluates and scores the model's performance against these test cases through a three-round conversation
