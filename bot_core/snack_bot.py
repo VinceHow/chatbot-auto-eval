@@ -112,9 +112,9 @@ def get_claude_response(query: str,
     system_prompt = system_prompt.replace("{KNOWLEDGE_FROM_PINECONE}", knowledge_string)
     # print(system_prompt)
     response = client.messages.create(
-        model="claude-3-sonnet-20240229",
-        # model="claude-3-opus-20240229",
-        max_tokens=200,
+        # model="claude-3-sonnet-20240229",
+        model="claude-3-opus-20240229",
+        max_tokens=75,
         temperature=temperature,
         system=system_prompt,
         messages= convo_history
@@ -153,8 +153,9 @@ def complete_single_user_bot_interaction(
 def simulate_user_follow_up_question(conversation: UserBotConversation):
     # init a temp conversation object
     convo = UserBotConversation(convo_id="", interactions=[])
-    system_prompt = f"""Imagine you are the user who started the below conversation, with the goal of completing the taks of: {conversation.conversation_seed.job_to_be_done}. 
-You have a follow-up question, what would you ask the assistant? Reply with the follow-up question only."""
+    system_prompt = f"""Imagine you are the user who started the below conversation, with the goal of completing the taks of: {conversation.conversation_seed.job_to_be_done}.
+You have a follow-up question, what would you ask the assistant? 
+Reply with the follow-up question only and nothing else."""
     # convo to-this-point
     user_query = create_convo_string(conversation)
     convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
@@ -228,7 +229,7 @@ Bot scores:
 
 Provide an overall quality score (0-1) for the entire conversation based on whether the bot helped the user to achieve their original Job to be Done, needs, and motivations, and whether the bot answered the user's questions Faithfulness, precisely, and was relevant."""
     system_prompt = system_prompt + """
-Return only the JSON result with keys:
+Return only the JSON result with keys, and nothing else:
 {
 "quality_score": float,
 "reasoning": str (within 30 words)
@@ -261,7 +262,7 @@ if __name__ == "__main__":
     for question in tqdm.tqdm(questions):
         # create a conversation seed
         seed = ConversationSeed(job_to_be_done, question)
-        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 1)       
+        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, max_interactions=3)       
         # pretty_print_stored_conversation(convo.to_dict())
         convos.append(convo)
     store_simulated_conversations(convos, delete_first=True)

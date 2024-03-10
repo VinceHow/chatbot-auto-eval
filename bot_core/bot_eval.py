@@ -44,14 +44,14 @@ class InteractionEvaluation:
 class ConversationEvaluation:
     # a conversation will be evaluated based on the following criteria:
     # Helpfulness - Did the bot help the user achieve their JTBD?
-    def __init__(self, quality_score: float, reason: str = None):
+    def __init__(self, quality_score: float, reasoning: str = None):
         self.quality_score = quality_score
-        self.reason = reason
+        self.reasoning = reasoning
     # export the evaluation as a dictionary
     def to_dict(self):
         return {
             "quality_score": self.quality_score,
-            "reason": self.reason
+            "reasoning": self.reasoning
         }
 
 def evaluate_single_interaction(interaction:dict) -> InteractionEvaluation:
