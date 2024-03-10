@@ -164,7 +164,7 @@ You have a follow-up question, what would you ask the assistant? Reply with the 
 
 def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_prompt: str, max_interactions: int = 1):
     # init a temp conversation object, with a unique id
-    convo = UserBotConversation(convo_id= uuid.uuid4(), interactions=[], conversation_seed= conversation_seed)
+    convo = UserBotConversation(convo_id= str(uuid.uuid4()), interactions=[], conversation_seed= conversation_seed)
     # start the conversation
     convo = complete_single_user_bot_interaction(convo, convo.conversation_seed.user_query, system_prompt)
     interaction_count = 1
@@ -177,8 +177,11 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
     convo.evaluation = evaluate_whole_conversation(convo)
     return convo
 
-def store_simulated_conversations(conversation: list[UserBotConversation]):
-    with open("../bot_core/conversations_dumb_test.py", "a") as file:
+def store_simulated_conversations(conversation: list[UserBotConversation], file_path: str = "../bot_core/conversations_dumb_test.py", delete_first: bool = False):
+    if delete_first:
+        # delete the contents of the file
+        open(file_path, "w").close()
+    with open(file_path, "a") as file:
         file.write(f"conversations = [\n")
         for convo in conversation:
             file.write(f"{convo.to_dict()},\n")
@@ -192,8 +195,10 @@ def pretty_print_stored_conversation(conversation: dict, ignore_knowledge: bool 
         for interaction in convo["interactions"]:
             interaction.pop("knowledge_used")
         print(json.dumps(convo, indent=4))
+        return
     else:
         print(json.dumps(conversation, indent=4))
+        return
 
 def evaluate_whole_conversation(conversation: UserBotConversation):
 #  -> ConversationEvaluation:
@@ -230,10 +235,7 @@ Return only the JSON result with keys:
 "reasoning": str (within 30 words)
 }
 """
-    user_query = create_convo_string(conversation)
-    print(user_query)
-    
-    # print(user_query)
+    user_query = create_convo_string(conversation)    
     convo = UserBotConversation(convo_id = "temp", interactions=[])
     convo = complete_single_user_bot_interaction(convo, user_query, system_prompt, run_evaluation=False)
 
@@ -242,7 +244,7 @@ Return only the JSON result with keys:
         # turn the bot response into a dictionary
         response = json.loads(response_raw)
     except:
-        print(convo.interactions[-1].bot_response)
+        print(f"Failed to process the response as dict: {response_raw}")
         response = {"quality_score": 0.0, "reasoning": response_raw}
     # turn the response into a ConversationEvaluation object
     response = ConversationEvaluation(response["quality_score"], response["reasoning"])
@@ -251,18 +253,18 @@ Return only the JSON result with keys:
 if __name__ == "__main__":
     # seed some conversations
     job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
-    questions = sample_questions.sample_questions[2]['initial-questions']
-    # print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
+    # get 2 initial questions for the job to be done
+    questions = [sample_questions.sample_questions[2]['initial-questions'][0]]
+    print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
     convos = []
     # using TQDM to show a progress bar
     for question in tqdm.tqdm(questions):
         # create a conversation seed
         seed = ConversationSeed(job_to_be_done, question)
-        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 2)
-        convo.evaluation = ConversationEvaluation(0.8)
+        convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 1)       
         pretty_print_stored_conversation(convo.to_dict())
         convos.append(convo)
-    store_simulated_conversations(convos)
+    store_simulated_conversations(convos, delete_first=True)
 
 
     # conv = conversations[0]
