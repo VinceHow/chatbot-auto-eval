@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
 from conversations.conversation_smart import smart_conversations
@@ -21,7 +22,7 @@ convos = {
 }
 
 
-def traditional_meteric_row(metric_info, base_url):
+def traditional_meteric_row(metric_info, base_url, metric_benchmark):
     col1, col2, col3 = st.columns([1, 1, 1])
     with col1:
         if metric_info["status"]=="pass":
@@ -29,13 +30,14 @@ def traditional_meteric_row(metric_info, base_url):
         elif metric_info["status"]=="fail":
             st.markdown("❌")
     with col2:
-        st.metric(metric_info["name"], metric_info["value"])
+        delta = metric_info["value"] - metric_benchmark[metric_benchmark["name"]==metric_info["name"]]["value"].values[0]
+        st.metric(metric_info["name"], round(metric_info["value"], 2), round(delta, 2))
     with col3:
         url = f"{base_url}/Eval_deepdive?metric_name={metric_info['name']}&bot_type={st.session_state.bot_version}"
         st.link_button("Detailed Eval", url)
 
 
-def jbt_metric_row(metric_info, base_url):
+def jbt_metric_row(metric_info, base_url, metric_benchmark):
     col1, col2, col3, col4, col5= st.columns([1, 1, 1, 1, 1])
     with col1:
         st.markdown(metric_info["name"])
@@ -44,7 +46,8 @@ def jbt_metric_row(metric_info, base_url):
         metric_info_keys = list(metric_info.keys())
         for key in metric_info_keys:
             if key not in ["name", "value", "status", "info", "number_of_convo"]:
-                st.metric(key, metric_info[key])
+                delta = metric_info[key] - metric_benchmark[metric_benchmark["name"]==metric_info["name"]]["value"].values[0]
+                st.metric(key, round(metric_info[key], 2), round(delta, 2))
     with col3:
         if metric_info["status"]=="pass":
             st.markdown("✅")
@@ -57,6 +60,23 @@ def jbt_metric_row(metric_info, base_url):
         st.link_button("Detailed Eval", url)
 
 
+def calculate_benchmark():
+    # we use raw version of the chatbot metrics as bench mark
+    raw_convos = convos["raw"]
+    metric_infos = []
+    keys_to_keep = ['name', 'value']
+    for metrics in traditional_metrics:
+        traditional_metrics_df = extract_traditional_metrics_from_convos(metrics, raw_convos, local_url, "raw")
+        traditional_metrics_summary = summarise_traditional_metrics(traditional_metrics_df)
+        metric_infos.append({k: traditional_metrics_summary[k] for k in keys_to_keep if k in traditional_metrics_summary})
+    jobs_to_be_done_metrics = [metric["job-to-be-done"] for metric in jobs_to_be_done_info]
+    for jtb_metrics in jobs_to_be_done_metrics:
+        jbt_metrics_df = extract_job_to_be_done_metrics(jtb_metrics, raw_convos, local_url, "raw")
+        jbt_metric_summary = summarise_jtd_metrics(jbt_metrics_df)
+        jbt_metric_summary["value"] = jbt_metric_summary["quality_score"]
+        metric_infos.append({k: jbt_metric_summary[k] for k in keys_to_keep if k in jbt_metric_summary})
+    return pd.DataFrame(metric_infos)
+        
 def evaluation_dashboard():
     st.title('Evaluation Dashboard')
     if st.session_state.running_environment == "Heroku":
@@ -72,6 +92,7 @@ def evaluation_dashboard():
         ('raw', 'improved'))
     conversations = convos[st.session_state.bot_version]
     tab1, tab2 = st.tabs(["Jobs to be done metrics", "RAG specific metrics"])
+    metric_benchmark = calculate_benchmark()
     with tab1:
         st.markdown("### Jobs to be done metrics")
         st.markdown('')
@@ -84,7 +105,7 @@ def evaluation_dashboard():
             metric_extracted["info"] = extra_info
             metric_infos.append(metric_extracted)
         for metric_info in metric_infos:
-            jbt_metric_row(metric_info, base_url)
+            jbt_metric_row(metric_info, base_url, metric_benchmark)
     with tab2:
         st.markdown("### Traditional RAG metrics")
         st.markdown('')
@@ -93,7 +114,7 @@ def evaluation_dashboard():
             traditional_metrics_df = extract_traditional_metrics_from_convos(metrics, conversations, base_url, st.session_state.bot_version)
             metric_infos.append(summarise_traditional_metrics(traditional_metrics_df))
         for metric_info in metric_infos:
-            traditional_meteric_row(metric_info, base_url)
+            traditional_meteric_row(metric_info, base_url, metric_benchmark)
         
 authenticator = get_authenticator()
 authenticator._check_cookie()
