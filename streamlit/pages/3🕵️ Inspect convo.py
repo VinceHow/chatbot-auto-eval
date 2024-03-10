@@ -69,19 +69,17 @@ def display_convo_with_eval(convo_id, bot_type):
     interactions = convo["interactions"]
     for interaction in interactions:
         user_message = st.chat_message("User", avatar="🤖")
-        thought_message = st.chat_message("Assistant context", avatar="🧠")
         assisstant_message = st.chat_message("Assistant", avatar="🍭")
         user_message.write(interaction["user_query"])
         assisstant_message.write(interaction["bot_response"])
-        texts = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
-        thought_message.write(texts)
         with stylable_container(
             key="container_with_border",
             css_styles="""
                 {
                     border: 1px solid rgba(49, 51, 63, 0.2);
                     border-radius: 0.5rem;
-                    padding: calc(1em - 1px)
+                    padding: calc(1em - 1px);
+                    background-color: #f5f5f5;
                 }
                 """,
         ):
@@ -92,13 +90,17 @@ def display_convo_with_eval(convo_id, bot_type):
                 with cols[col_count]:
                     st.metric(metric, round(interaction["evaluation"][metric], 2))
                 col_count += 1
+        thought_message = st.chat_message("Assistant context", avatar="🧠")
+        texts = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
+        thought_message.json(texts, expanded=False)
+        st.divider()
     with stylable_container(
         key="container_with_border",
         css_styles="""
             {
                 border: 1px solid rgba(49, 51, 63, 0.2);
                 border-radius: 0.5rem;
-                padding: calc(1em - 1px)
+                padding: calc(1em - 1px);
             }
             """,
         ):

@@ -50,6 +50,7 @@ def extract_job_to_be_done_metrics(metric_name, convos, base_url, bot_type):
         jtd_metric_dict["name"] = metric_name
         jtd_metric_dict["quality_score"] = convo["evaluation"]["quality_score"]
         jtd_metric_dict["reasoning"] = convo["evaluation"]["reasoning"]
+        jtd_metric_dict["convo_start"] = interactions[0]["user_query"]
         jtd_metric_dict["convo_history"] = "/n".join([f"User query:{interaction['user_query']}, Bot response:{interaction['bot_response']}" for interaction in interactions])
         url = f"{base_url}/Inspect_convo?convo_id={convo['convo_id']}&bot_type={bot_type}"
         jtd_metric_dict["convo_link"] = url
