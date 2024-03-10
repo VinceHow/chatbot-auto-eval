@@ -15,7 +15,6 @@ parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 import vector_db.pinecone_db as pinecone_db
 import snack_52.sample_questions as sample_questions
-from conversations_dumb_test import conversations
 from bot_eval import (
     evaluate_single_interaction, 
     InteractionEvaluation, 
@@ -177,7 +176,7 @@ def simulate_user_bot_conversation(conversation_seed: ConversationSeed, system_p
     convo.evaluation = evaluate_whole_conversation(convo)
     return convo
 
-def store_simulated_conversations(conversation: list[UserBotConversation], file_path: str = "../bot_core/conversations_dumb_test.py", delete_first: bool = False):
+def store_simulated_conversations(conversation: list[UserBotConversation], file_path: str = "../bot_core/conversations_dumb.py", delete_first: bool = False):
     if delete_first:
         # delete the contents of the file
         open(file_path, "w").close()
@@ -257,12 +256,13 @@ if __name__ == "__main__":
     questions = [sample_questions.sample_questions[2]['initial-questions'][0]]
     print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
     convos = []
+    path = "../bot_core/conversations_dumb.py"
     # using TQDM to show a progress bar
     for question in tqdm.tqdm(questions):
         # create a conversation seed
         seed = ConversationSeed(job_to_be_done, question)
         convo = simulate_user_bot_conversation(seed, dumb_system_prompt, 1)       
-        pretty_print_stored_conversation(convo.to_dict())
+        # pretty_print_stored_conversation(convo.to_dict())
         convos.append(convo)
     store_simulated_conversations(convos, delete_first=True)
 
