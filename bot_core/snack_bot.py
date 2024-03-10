@@ -14,7 +14,8 @@ parent_dir = os.path.dirname(current_dir)
 # Add the parent directory to the Python path
 sys.path.append(parent_dir)
 import vector_db.pinecone_db as pinecone_db
-import snack_52.sample_questions as sample_questions
+from snack_52.sample_questions import sample_questions
+from snack_52.jobs_to_be_done import jobs_to_be_done
 from bot_eval import (
     evaluate_single_interaction, 
     InteractionEvaluation, 
@@ -293,53 +294,55 @@ Return only the JSON result with keys, and nothing else:
     response = ConversationEvaluation(response["quality_score"], response["reasoning"])
     return response
 
+def get_questions_for_job_to_be_done(job_to_be_done: str):
+    # get the questions for the job to be done by filtering the sample_questions
+    # each item in sample_questions looks like this: {'job-to-be-done': 'Support small and artisanal snack brands', 'initial-questions': ['Do you feature snacks from small or local businesses?', 'Do you feature snacks from businesses from other countries?', 'What are examples of brands that you support in your bundles?', 'Are there any exclusive or limited-edition snacks from these artisanal brands?']}
+    questions = [job["initial-questions"] for job in sample_questions if job["job-to-be-done"] == job_to_be_done][0]
+    return questions
+
+def run_end_to_end_eval_for_bot(
+    job_to_be_done: str,
+    system_prompt: str,
+    namespace: str,
+    max_interactions: int = 3,
+    file_path: str = "../bot_core/conversations_dumb.py",
+    delete_first: bool = False
+    ):
+    # get the initial questions for the job to be done
+    questions = get_questions_for_job_to_be_done(job_to_be_done)
+    convos = []
+    for q in tqdm.tqdm(questions):
+        conversation_seed = ConversationSeed(job_to_be_done, q)
+        # simulate the conversation
+        convo = simulate_user_bot_conversation(
+            conversation_seed, 
+            system_prompt,
+            namespace,
+            max_interactions
+            )
+        convos.append(convo)
+    # store the conversation
+    store_simulated_conversations(convo, file_path, delete_first)
+    return
+
 if __name__ == "__main__":
     # seed some conversations
-    job_to_be_done = sample_questions.sample_questions[2]['job-to-be-done']
-    # get 2 initial questions for the job to be done
-    questions = sample_questions.sample_questions[2]['initial-questions']
-    print(f"JTBD: {job_to_be_done}\nQuestion: {questions}")
-    convos = []
-    path = "../bot_core/conversations_dumb.py"
-    # using TQDM to show a progress bar
-    for question in tqdm.tqdm(questions):
-        # create a conversation seed
-        seed = ConversationSeed(job_to_be_done, question)
-        convo = simulate_user_bot_conversation(
-            seed, 
-            dumb_system_prompt,
+    jobs = [job["job-to-be-done"] for job in jobs_to_be_done]
+    for job in jobs:
+        run_end_to_end_eval_for_bot(
+            job_to_be_done=job,
+            system_prompt=dumb_system_prompt,
             namespace="dumb-bot-knowledge",
-            max_interactions=3
-            )       
-        # pretty_print_stored_conversation(convo.to_dict())
-        convos.append(convo)
-    store_simulated_conversations(convos, delete_first=True)
-
-
-    # conv = conversations[0]
-    # # turn the conversation into a UserBotConversation object
-    # conv = UserBotConversation(
-    #     convo_id=conv["convo_id"],
-    #     interactions=[UserBotInteraction(
-    #         interaction["interaction_turn"],
-    #         interaction["user_query"],
-    #         interaction["bot_response"],
-    #         interaction["knowledge_used"],
-    #         InteractionEvaluation(
-    #             interaction["evaluation"]["faithfulness"],
-    #             interaction["evaluation"]["context_precision"],
-    #             interaction["evaluation"]["answer_relevancy"],
-    #             interaction["evaluation"]["context_recall"]
-    #         )
-    #     ) for interaction in conv["interactions"]],
-    #     conversation_seed=ConversationSeed(
-    #         conv["conversation_seed"]["job_to_be_done"],
-    #         conv["conversation_seed"]["user_query"]
-    #     ),
-    #     conversation_evaluation=ConversationEvaluation(
-    #         conv["evaluation"]["helpfulness"]
-    #     )
-    # )
-    # # pretty_print_stored_conversation(conv)
-    # helpful = evaluate_whole_conversation(conv)
-    # print(helpful)
+            max_interactions=3,
+            file_path="../bot_core/conversations_dumb.py",
+            delete_first=False
+        )
+    for job in jobs:
+        run_end_to_end_eval_for_bot(
+            job_to_be_done=job,
+            system_prompt=dumb_system_prompt,
+            namespace="smart-bot-knowledge",
+            max_interactions=3,
+            file_path="../bot_core/conversations_smart.py",
+            delete_first=False
+        )
