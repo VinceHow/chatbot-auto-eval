@@ -68,7 +68,7 @@ def display_convo_with_eval(convo_id, bot_type):
     convo = retrieve_convo_by_id(convo_id, convos[bot_type])
     interactions = convo["interactions"]
     for interaction in interactions:
-        user_message = st.chat_message("User", avatar="👤")
+        user_message = st.chat_message("User", avatar="🤖")
         thought_message = st.chat_message("Assistant context", avatar="🧠")
         assisstant_message = st.chat_message("Assistant", avatar="🍭")
         user_message.write(interaction["user_query"])
@@ -90,7 +90,7 @@ def display_convo_with_eval(convo_id, bot_type):
             col_count = 0
             for metric in interaction["evaluation"]:
                 with cols[col_count]:
-                    st.metric(metric, interaction["evaluation"][metric])
+                    st.metric(metric, round(interaction["evaluation"][metric], 2))
                 col_count += 1
     with stylable_container(
         key="container_with_border",
@@ -108,8 +108,11 @@ def display_convo_with_eval(convo_id, bot_type):
         else:
             donut_color = 'red'
         donut_chart = make_donut(convo["evaluation"]["quality_score"], "quality_score", donut_color)
-        st.write(metric)
-        st.altair_chart(donut_chart)
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.altair_chart(donut_chart)
+        with col2:
+            st.write(convo["evaluation"]["reasoning"])
     return None
 
 
