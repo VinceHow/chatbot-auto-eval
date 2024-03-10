@@ -271,6 +271,10 @@ Return only the JSON result with keys, and nothing else:
 "quality_score": float,
 "reasoning": str (within 30 words)
 }
+
+Start your response with:
+{
+"quality_score":
 """
     user_query = create_convo_string(conversation)    
     convo = UserBotConversation(convo_id = "temp", interactions=[])
