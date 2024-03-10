@@ -39,7 +39,7 @@ def jbt_metric_row(metric_info, base_url):
     col1, col2, col3, col4, col5= st.columns([1, 1, 1, 1, 1])
     with col1:
         st.markdown(metric_info["name"])
-        st.markdown(f"Explaination: {metric_info['info']}")
+        st.markdown(f"Explanation: {metric_info['info']}")
     with col2:
         metric_info_keys = list(metric_info.keys())
         for key in metric_info_keys:
