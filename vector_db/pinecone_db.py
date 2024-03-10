@@ -190,14 +190,15 @@ def search_vector_db_for_similar_vectors(
 pinecone_index_conn = connect_pinecone_index()
 
 if __name__ == "__main__":
-    delete_knowledge_by_namespace(pinecone_index_conn, "dumb-bot-knowledge")
-    dumb_bot_knowledge = "../snack_52/snack_52_docs_dumb.txt"
-    add_doc_into_pinecone(pinecone_index_conn, dumb_bot_knowledge, namespace="dumb-bot-knowledge")
+    # delete_knowledge_by_namespace(pinecone_index_conn, "dumb-bot-knowledge")
+    # dumb_bot_knowledge = "../snack_52/snack_52_docs_dumb.txt"
+    # add_doc_into_pinecone(pinecone_index_conn, dumb_bot_knowledge, namespace="dumb-bot-knowledge")
 
-    delete_knowledge_by_namespace(pinecone_index_conn, "smart-bot-knowledge")
-    dumb_bot_knowledge = "../snack_52/snack_52_docs_smart.txt"
-    add_doc_into_pinecone(pinecone_index_conn, dumb_bot_knowledge, namespace="smart-bot-knowledge")
-
-    # question = "What is snack 52?"
-    # matches = search_vector_db_for_similar_vectors(question, "dumb-bot-knowledge")
-    # print(matches)
+    # delete_knowledge_by_namespace(pinecone_index_conn, "smart-bot-knowledge")
+    # dumb_bot_knowledge = "../snack_52/snack_52_docs_smart.txt"
+    # add_doc_into_pinecone(pinecone_index_conn, dumb_bot_knowledge, namespace="smart-bot-knowledge")
+    question = "Do you offer boxes with healthier snack options?"
+    matches = search_vector_db_for_similar_vectors(question, "dumb-bot-knowledge")
+    print(matches)
+    matches = search_vector_db_for_similar_vectors(question, "smart-bot-knowledge")
+    print(matches)
