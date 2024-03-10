@@ -1,8 +1,8 @@
 import streamlit as st
 from streamlit_extras.app_logo import add_logo
 from authenticator.authenticate import get_authenticator
-from conversations.conversation_smart import smart_conversations
-from conversations.conversation_dumb import dumb_conversations
+from conversations.conversation_smart import smart_conversations, smart_suggestions
+from conversations.conversation_dumb import dumb_conversations, dumb_suggestions
 from conversations.utils import extract_traditional_metrics_from_convos, extract_job_to_be_done_metrics
 from config import heroku_url, local_url, get_running_environment, traditional_metrics
 
@@ -39,6 +39,12 @@ def display_detail_eval(metric_name, bot_type):
                         },
                     hide_index=True)
     else:
+        suggestion_to_select_from = smart_suggestions if bot_type == "improved" else dumb_suggestions
+        for suggestion in suggestion_to_select_from:
+            if suggestion["job_to_be_done"] == metric_name:
+                suggestion_to_display = suggestion['suggestion']
+        with st.expander(f"Improvement tips for **{metric_name}**", expanded=True):
+            st.markdown(suggestion_to_display)
         metric_info = extract_job_to_be_done_metrics(metric_name, conversations, base_url, bot_type)
         column_config = {
             "conversation_id": "Conversation ID",
