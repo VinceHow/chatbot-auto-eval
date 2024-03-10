@@ -24,9 +24,12 @@ def display_convo_with_eval(convo_id, bot_type):
     interactions = convo["interactions"]
     for interaction in interactions:
         user_message = st.chat_message("User", avatar="👤")
+        thought_message = st.chat_message("Assistant context", avatar="🧠")
         assisstant_message = st.chat_message("Assistant", avatar="🍭")
         user_message.write(interaction["user_query"])
         assisstant_message.write(interaction["bot_response"])
+        texts = [knowledge["metadata"]["text"] for knowledge in interaction["knowledge_used"]]
+        thought_message.write(texts)
         with stylable_container(
             key="container_with_border",
             css_styles="""
@@ -37,7 +40,13 @@ def display_convo_with_eval(convo_id, bot_type):
                 }
                 """,
         ):
-            st.markdown("This is a container with a border.")
+            st.markdown("Current turn evaluation")
+            cols = st.columns([1, 1, 1, 1])
+            col_count = 0
+            for metric in interaction["evaluation"]:
+                with cols[col_count]:
+                    st.metric(metric, interaction["evaluation"][metric])
+                col_count += 1
     with stylable_container(
         key="container_with_border",
         css_styles="""
@@ -48,7 +57,9 @@ def display_convo_with_eval(convo_id, bot_type):
             }
             """,
         ):
-        st.markdown("This is a container with a border.")
+        st.markdown("Overall conversation evaluation")
+        for metric in convo["evaluation"]:
+            st.metric(metric, convo["evaluation"][metric])
     return None
 
 

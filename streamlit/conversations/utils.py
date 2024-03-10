@@ -69,6 +69,7 @@ def summarise_jtd_metrics(jtd_metric_df):
     job_to_be_done_metric_dict = dict()
     print(jtd_metric_df.head())
     job_to_be_done_metric_dict["name"] = jtd_metric_df["name"].iloc[0]
+    job_to_be_done_metric_dict["number_of_convo"] = len(jtd_metric_df)
     metric_list = jtd_metric_df["metric_list"].iloc[0]
     overall_value = 0
     count = 0
