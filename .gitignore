@@ -32,6 +32,8 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Ignore py cache
-__pycache__/
+*venv/
+*secrets.toml
+*__pycache__/
 streamlit/config.yaml
+config.yaml
