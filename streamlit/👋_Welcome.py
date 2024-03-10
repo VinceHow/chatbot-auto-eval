@@ -19,7 +19,7 @@ logo_url = '.static/RAGnarok_240.png'
 
 add_logo(logo_url, 60)
 
-st.title('Welcome to the chatbot auto eval tool 🤖🔍🚀')
+st.title('Welcome to RAGnarok - the chatbot auto evaluation tool 🤖🔍🚀')
 
 with open('./config.yaml') as file:
     config = yaml.load(file, Loader=SafeLoader)
@@ -29,7 +29,7 @@ authenticator = get_authenticator()
 authenticator.login()
 
 if st.session_state["authentication_status"]:
-    st.markdown('You are logged in and now naviagte to eval dashboard to see your bot performance')
+    st.markdown('You are logged in. Feel free to navigate to the evaluation dashboard to see your bot performance')
     with st.sidebar:
         authenticator.logout()
         st.write(f'Welcome *{st.session_state["name"]}*')
