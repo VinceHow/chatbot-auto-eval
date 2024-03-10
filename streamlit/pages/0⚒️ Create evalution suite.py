@@ -37,8 +37,10 @@ def user_input_flow():
     if st.button('Generate evaluation suite'):
         with st.status("Auto generating evaluation suite...", expanded=True):
             st.write("Reading knowledge base...")
+            # display a chunk of knowledge base
             time.sleep(1)
             st.write("Simulating mutli-turn conversation with desired bot...")
+            # diplay a conversation
             time.sleep(3)
             st.write("Running evaluation metrics...")
             time.sleep(3)
