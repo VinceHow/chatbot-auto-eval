@@ -8,7 +8,7 @@ from conversations.utils import retrieve_convo_by_id
 import pandas as pd
 import altair as alt
 
-logo_url = r'streamlit/.static/RAGnarok_240.png'
+logo_url = '.static/RAGnarok_240.png'
 
 add_logo(logo_url, 60)
 

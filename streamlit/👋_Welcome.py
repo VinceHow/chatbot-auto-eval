@@ -15,7 +15,7 @@ from config import get_running_environment
 if "running_environment" not in st.session_state:
     st.session_state.running_environment = get_running_environment()
 
-logo_url = r'streamlit/.static/RAGnarok_240.png' 
+logo_url = '.static/RAGnarok_240.png' 
 
 add_logo(logo_url, 60)
 
