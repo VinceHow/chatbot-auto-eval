@@ -107,7 +107,8 @@ def get_claude_response(query: str,
                         conversation: UserBotConversation,
                         namespace:str,
                         pull_knowledge: bool = True,
-                        temperature: float = 0.0,):
+                        temperature: float = 0.0,
+                        max_tokens: int = 75,):
     convo_history = create_conversation_history(conversation)
     convo_history.append({"role": "user", "content": query})
     if pull_knowledge:
@@ -119,7 +120,7 @@ def get_claude_response(query: str,
     response = client.messages.create(
         # model="claude-3-sonnet-20240229",
         model="claude-3-opus-20240229",
-        max_tokens=75,
+        max_tokens=max_tokens,
         temperature=temperature,
         system=system_prompt,
         messages= convo_history
